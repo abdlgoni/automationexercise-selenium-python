@@ -3,15 +3,29 @@ Test Cases for Authentication (Login & Registration)
 Based on Automation Exercise Test Cases
 """
 import pytest
-from selenium.webdriver.common.by import By
-import time
+from pages.home_page import HomePage
+from pages.login_page import LoginPage
+from pages.signup_page import SignupPage
+from utils.data_generator import TestDataGenerator
+import logging
+logger = logging.getLogger(__name__)
 
+@pytest.mark.usefixtures("driver")
 class TestAuthentication:
     """Test suite for user authentication"""
     
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.home_page = HomePage(self.driver)
+        self.login_page = LoginPage(self.driver)
+        self.signup_page = SignupPage(self.driver)
+        self.data_generator = TestDataGenerator()
+        self.user_data = self.data_generator.generate_user_data()
+        self.birth_date = self.data_generator.generate_birth_date()
+        logger.info("Setup Complete")
+    
     @pytest.mark.smoke
-    @pytest.mark.login
-    def test_register_user(self, driver):
+    def test_register_user(self):
         """
         Test Case 1: Register User
         Steps:
@@ -33,159 +47,68 @@ class TestAuthentication:
         16. Click 'Delete Account' button
         17. Verify that 'ACCOUNT DELETED!' is visible and click 'Continue' button
         """
-        # Verify home page is visible
-        assert "Automation Exercise" in driver.title
         
-        # Click on Signup/Login button
-        signup_login_btn = driver.find_element(By.XPATH, "//a[@href='/login']")
-        signup_login_btn.click()
+        logger.info("Starting test register user")
+        self.home_page.open()
         
-        # Verify 'New User Signup!' is visible
-        signup_text = driver.find_element(By.XPATH, "//h2[text()='New User Signup!']")
-        assert signup_text.is_displayed()
+        self.home_page.click_signup_login()
+        logger.info("Clicked Signup/Login")
         
-        # Enter name and email
-        name_input = driver.find_element(By.NAME, "name")
-        email_input = driver.find_element(By.XPATH, "//input[@data-qa='signup-email']")
+        assert self.login_page.is_signup_section_visible()
+        logger.info("Signup section is visible")
         
-        name_input.send_keys("Test User")
-        email_input.send_keys(f"testuser{int(time.time())}@example.com")
+        self.login_page.signup(self.user_data['name'], self.user_data['email'])
+        self.login_page.click_signup_button()
+        logger.info("Filled signup form and clicked signup button")
         
-        # Click Signup button
-        signup_btn = driver.find_element(By.XPATH, "//button[@data-qa='signup-button']")
-        signup_btn.click()
+        assert self.signup_page.is_account_info_page_displayed()
+        logger.info("Account information page is visible")
+        # Fill account info
+        account_data = {
+            'title': 'Mr',
+            'password': self.user_data['password'],
+            'day': self.birth_date['day'],
+            'month': self.birth_date['month'],
+            'year': self.birth_date['year']
+        }
         
-        # Verify 'ENTER ACCOUNT INFORMATION' is visible
-        account_info_text = driver.find_element(By.XPATH, "//b[text()='Enter Account Information']")
-        assert account_info_text.is_displayed()
+        # Fill address info
+        address_data = {
+            'first_name': self.user_data['first_name'],
+            'last_name': self.user_data['last_name'],
+            'company': self.user_data['company'],
+            'address1': self.user_data['address1'],
+            'address2': self.user_data['address2'],
+            'country': self.user_data['country'],
+            'state': self.user_data['state'],
+            'city': self.user_data['city'],
+            'zipcode': self.user_data['zipcode'],
+            'mobile': self.user_data['mobile']
+        }
         
-        print("✓ Test Register User - Passed")
-    
-    
-    @pytest.mark.smoke
-    @pytest.mark.login
-    def test_login_with_correct_credentials(self, driver):
-        """
-        Test Case 2: Login User with correct email and password
-        Steps:
-        1. Navigate to url 'http://automationexercise.com'
-        2. Verify that home page is visible successfully
-        3. Click on 'Signup / Login' button
-        4. Verify 'Login to your account' is visible
-        5. Enter correct email address and password
-        6. Click 'login' button
-        7. Verify that 'Logged in as username' is visible
-        8. Click 'Delete Account' button
-        9. Verify that 'ACCOUNT DELETED!' is visible
-        """
-        # Verify home page
-        assert "Automation Exercise" in driver.title
-        
-        # Click on Signup/Login
-        driver.find_element(By.XPATH, "//a[@href='/login']").click()
-        
-        # Verify 'Login to your account' is visible
-        login_text = driver.find_element(By.XPATH, "//h2[text()='Login to your account']")
-        assert login_text.is_displayed()
-        
-        # Note: You need to create a test user first or use existing credentials
-        # This is a skeleton test - needs valid credentials
-        
-        print("✓ Test Login with Correct Credentials - Framework Ready")
-    
-    
-    @pytest.mark.login
-    def test_login_with_incorrect_credentials(self, driver):
-        """
-        Test Case 3: Login User with incorrect email and password
-        Steps:
-        1. Navigate to url 'http://automationexercise.com'
-        2. Verify that home page is visible successfully
-        3. Click on 'Signup / Login' button
-        4. Verify 'Login to your account' is visible
-        5. Enter incorrect email address and password
-        6. Click 'login' button
-        7. Verify error 'Your email or password is incorrect!' is visible
-        """
-        # Navigate to login page
-        driver.find_element(By.XPATH, "//a[@href='/login']").click()
-        
-        # Verify login form is visible
-        login_text = driver.find_element(By.XPATH, "//h2[text()='Login to your account']")
-        assert login_text.is_displayed()
-        
-        # Enter incorrect credentials
-        email_input = driver.find_element(By.XPATH, "//input[@data-qa='login-email']")
-        password_input = driver.find_element(By.XPATH, "//input[@data-qa='login-password']")
-        
-        email_input.send_keys("wrongemail@example.com")
-        password_input.send_keys("wrongpassword")
-        
-        # Click login button
-        driver.find_element(By.XPATH, "//button[@data-qa='login-button']").click()
-        
-        # Verify error message
-        error_msg = driver.find_element(By.XPATH, "//p[text()='Your email or password is incorrect!']")
-        assert error_msg.is_displayed()
-        
-        print("✓ Test Login with Incorrect Credentials - Passed")
-    
-    
-    @pytest.mark.login
-    def test_logout_user(self, driver):
-        """
-        Test Case 4: Logout User
-        Steps:
-        1. Navigate to url 'http://automationexercise.com'
-        2. Verify that home page is visible successfully
-        3. Click on 'Signup / Login' button
-        4. Verify 'Login to your account' is visible
-        5. Enter correct email address and password
-        6. Click 'login' button
-        7. Verify that 'Logged in as username' is visible
-        8. Click 'Logout' button
-        9. Verify that user is navigated to login page
-        """
-        # Note: This test requires valid user credentials
-        # Skeleton implementation
-        
-        print("✓ Test Logout User - Framework Ready")
-    
-    
-    @pytest.mark.regression
-    @pytest.mark.login
-    def test_register_with_existing_email(self, driver):
-        """
-        Test Case 5: Register User with existing email
-        Steps:
-        1. Navigate to url 'http://automationexercise.com'
-        2. Verify that home page is visible successfully
-        3. Click on 'Signup / Login' button
-        4. Verify 'New User Signup!' is visible
-        5. Enter name and already registered email address
-        6. Click 'Signup' button
-        7. Verify error 'Email Address already exist!' is visible
-        """
-        # Click on Signup/Login
-        driver.find_element(By.XPATH, "//a[@href='/login']").click()
-        
-        # Verify signup form
-        signup_text = driver.find_element(By.XPATH, "//h2[text()='New User Signup!']")
-        assert signup_text.is_displayed()
-        
-        # Enter name and existing email
-        driver.find_element(By.NAME, "name").send_keys("Existing User")
-        driver.find_element(By.XPATH, "//input[@data-qa='signup-email']").send_keys("existinguser@example.com")
-        
-        # Click signup
-        driver.find_element(By.XPATH, "//button[@data-qa='signup-button']").click()
-        
-        # Verify error message
-        # Note: Actual error text might vary
-        time.sleep(1)  # Wait for potential error message
-        
-        print("✓ Test Register with Existing Email - Framework Ready")
+        self.signup_page.complete_registration(account_data, address_data)
+        logger.info("Completed registration form")
+        # Submit
+        # Verify success
+        assert self.signup_page.is_account_created_successfully()
+        logger.info("Acconut created successfully")
+        message_created = self.signup_page.get_account_created_message()
+        assert 'ACCOUNT CREATED!' in message_created
+        self.signup_page.click_continue()
 
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+        assert self.home_page.is_logged_in()
+        
+        username = self.home_page.get_logged_in_username()
+        assert username == self.user_data['name'] 
+        logger.info(f"Successfully registered user: {username}")
+        
+        self.home_page.click_delete_account()
+        assert self.signup_page.is_account_deleted_successfully()
+        message_deleted = self.signup_page.get_account_deleted_message()
+        assert 'ACCOUNT DELETED!' in message_deleted
+        
+        self.signup_page.click_continue()
+        logger.info("Successfully deleted account")
+            
+        
+        

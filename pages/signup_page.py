@@ -2,9 +2,14 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from pages.base_page import BasePage
+import logging
 
 
 class SignupPage(BasePage):
+    
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.logger = logging.getLogger(__name__)
     
     ACCOUNT_INFO_TITLE = (By.XPATH,"//b[normalize-space()='Enter Account Information']")
     
@@ -46,13 +51,13 @@ class SignupPage(BasePage):
     # CREATE ACCOUNT BUTTON
     CREATE_ACCOUNT_BUTTON = (By.CSS_SELECTOR, "button[data-qa='create-account']")
     
-    ACCOUNT_CREATED_TITLE = (By.XPATH, "//b[normalize-space()='Account Created!']")
+    ACCOUNT_CREATED_TITLE = (By.CSS_SELECTOR, "h2[data-qa='account-created']")
     ACCOUNT_CREATED_MESSAGE = (By.XPATH, "//p[contains(text(),'You can now take advantage of member privileges to')]")
     CONTINUE_BUTTON = (By.XPATH, "//a[normalize-space()='Continue']")
     
-    ACCOUNT_DELETE_TITLE = (By.XPATH, "//b[normalize-space()='Account Deleted!']") 
-    ACCOUNT_DELETE_MESSAGE = (By.XPATH, "//p[contains(text(),'You can create new account to take advantage of me')]")
-    CONTINUE_DELETE_BUTTON = ()
+    ACCOUNT_DELETED_TITLE = (By.CSS_SELECTOR, "h2[data-qa='account-deleted']") 
+    ACCOUNT_DELETED_MESSAGE = (By.XPATH, "//p[contains(text(),'You can create new account to take advantage of me')]")
+    
     
     def is_account_info_page_displayed(self):
         """
@@ -110,7 +115,7 @@ class SignupPage(BasePage):
             self.click(self.NEWSLETTER_CHECKBOX)
             self.logger.info("Checked newsletter checkbox")
             
-    def check_special_offer(self):
+    def check_special_offers(self):
         offer = self.find_element(self.SPECIAL_OFFER_CHECKBOX)
         if not offer.is_selected:
             self.click(self.SPECIAL_OFFER_CHECKBOX)
@@ -180,14 +185,147 @@ class SignupPage(BasePage):
         Returns: Message string
         """
         if self.is_account_created_successfully():
-            return self.get_text(self.ACCOUNT_CREATED_MESSAGE)
+            return self.get_text(self.ACCOUNT_CREATED_TITLE)
         return None
     
     def click_continue(self):
-        """Click Continue button after account creation"""
+        """Click Continue button after account creation and deleted"""
         self.click(self.CONTINUE_BUTTON)
         self.logger.info("Clicked Continue Button")
         
+    def is_account_deleted_successfully(self):
+        """
+        Verify bahwa account berhasil dibuat
+        Returns: Boolean
+        """
+        return self.is_element_visible(self.ACCOUNT_DELETED_TITLE)
+    
+    def get_account_deleted_message(self):
+        if self.is_account_deleted_successfully():
+            return self.get_text(self.ACCOUNT_DELETED_TITLE)
+        return None
+        
+    def fill_account_information(self, title, password, day, month, year, 
+                                 newsletter=True, special_offers=True):
+        """
+        Fill semua Account Information section
+        Args:
+            title: 'Mr' atau 'Mrs'
+            password: Password string
+            day: Birth day (e.g., '15')
+            month: Birth month (e.g., 'January')
+            year: Birth year (e.g., '1990')
+            newsletter: Boolean untuk newsletter checkbox
+            special_offers: Boolean untuk special offers checkbox
+        """
+        self.select_title(title)
+        self.enter_password(password)
+        self.select_date_of_birth(day, month, year)
+        
+        if newsletter:
+            self.check_newsletter()
+        
+        if special_offers:
+            self.check_special_offers()
+        
+        self.logger.info("Filled account information section")
+    
+    def fill_address_information(self, first_name, last_name, company, 
+                                 address1, address2, country, state, 
+                                 city, zipcode, mobile):
+        """
+        Fill semua Address Information section
+        Args:
+            first_name: First name
+            last_name: Last name
+            company: Company name
+            address1: Address line 1 (required)
+            address2: Address line 2 (optional)
+            country: Country name
+            state: State name
+            city: City name
+            zipcode: Zipcode
+            mobile: Mobile number
+        """
+        self.enter_first_name(first_name)
+        self.enter_last_name(last_name)
+        self.enter_company(company)
+        self.enter_address1(address1)
+        
+        if address2:
+            self.enter_address2(address2)
+        
+        self.select_country(country)
+        self.enter_state(state)
+        self.enter_city(city)
+        self.enter_zipcode(zipcode)
+        self.enter_mobile_number(mobile)
+        
+        self.logger.info("Filled address information section")
+    
+    def complete_registration(self, account_data, address_data):
+        """
+        Complete seluruh registration process
+        Args:
+            account_data: Dict dengan keys: title, password, day, month, year
+            address_data: Dict dengan keys: first_name, last_name, company, 
+                         address1, address2, country, state, city, zipcode, mobile
+        
+        Example:
+            account_data = {
+                'title': 'Mr',
+                'password': 'Test@123',
+                'day': '15',
+                'month': 'January',
+                'year': '1990'
+            }
+            
+            address_data = {
+                'first_name': 'John',
+                'last_name': 'Doe',
+                'company': 'ABC Corp',
+                'address1': '123 Main St',
+                'address2': 'Apt 4B',
+                'country': 'United States',
+                'state': 'California',
+                'city': 'Los Angeles',
+                'zipcode': '90001',
+                'mobile': '+1234567890'
+            }
+        """
+        # Fill account information
+        self.fill_account_information(
+            title=account_data.get('title', 'Mr'),
+            password=account_data['password'],
+            day=account_data['day'],
+            month=account_data['month'],
+            year=account_data['year'],
+            newsletter=account_data.get('newsletter', True),
+            special_offers=account_data.get('special_offers', True)
+        )
+        
+        # Scroll to address section
+        self.scroll_to_element(self.FIRST_NAME_FIELD)
+        
+        # Fill address information
+        self.fill_address_information(
+            first_name=address_data['first_name'],
+            last_name=address_data['last_name'],
+            company=address_data.get('company', ''),
+            address1=address_data['address1'],
+            address2=address_data.get('address2', ''),
+            country=address_data['country'],
+            state=address_data['state'],
+            city=address_data['city'],
+            zipcode=address_data['zipcode'],
+            mobile=address_data['mobile']
+        )
+        
+        # Scroll to and click Create Account button
+        self.scroll_to_element(self.CREATE_ACCOUNT_BUTTON)
+        self.click_create_account()
+        
+        self.logger.info("Completed full registration")
     
         
     

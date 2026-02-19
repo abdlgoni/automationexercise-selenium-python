@@ -4,9 +4,16 @@ Contains all locators and methods for Login/Signup page
 """
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
+import logging
+
+
 
 
 class LoginPage(BasePage):
+    
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.logger = logging.getLogger(__name__)
     
     # CONTAINER_LOGIN_SIGNUP = (By.XPATH, "//section[@id='form']//div[@class='row']")
     # Login Form
@@ -37,8 +44,10 @@ class LoginPage(BasePage):
     def signup(self, name, email):
         self.input_text(self.NAME_FORM, name)
         self.input_text(self.EMAIL_FORM_SIGNUP, email)
-        self.click(self.SIGNUP_BUTTON)
         self.logger.info(f"Attempted with name {name}, email {email}")
+        
+    def click_signup_button(self):
+        self.click(self.SIGNUP_BUTTON)
         
     def is_login_error_displayed(self):
         return self.is_element_visible(self.LOGIN_ERROR_MESSAGE)
@@ -60,7 +69,7 @@ class LoginPage(BasePage):
     def login(self, username, password):
         self.enter_username(username)
         self.enter_password(password)
-        self.click_login_button()
+
         
     def get_error_message(self):
         return self.get_text(self.ERROR_MESSAGE)
