@@ -27,6 +27,7 @@ class HomePage(BasePage):
     # ==================== NAVIGATION MENU ====================
     # Text-based locator untuk menu items (karena tidak ada ID/class unik)
     
+    
     HOME_LINK = (By.XPATH, "//a[contains(@href, '/')]//i[@class='fa fa-home']/..")
     PRODUCTS_LINK = (By.XPATH, "//a[@href='/products']")
     CART_LINK = (By.XPATH, "//a[@href='/view_cart']")
@@ -117,10 +118,10 @@ class HomePage(BasePage):
     
     def open(self):
         """
-        Open Wikipedia homepage
+        Open automation exercise homepage
         """
         self.open_url(self.url)
-        self.wait_for_page_load()
+        self.wait_for_page_ready(self.SIGNUP_LOGIN_LINK)
         self.logger.info(f"Opened homepage: {self.url}")
     
     def click_signup_login(self):

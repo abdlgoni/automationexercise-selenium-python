@@ -223,6 +223,11 @@ class BasePage:
         wait = WebDriverWait(self.driver, wait_time)
         wait.until(lambda driver: driver.execute_script("return document.readyState") == "complete")
         self.logger.debug("Page fully loaded")
+        
+    def wait_for_page_ready(self, locator):
+        WebDriverWait(self.driver, Config.EXPLICIT_WAIT).until(
+        EC.visibility_of_element_located(locator)
+    )
     
     # ========== Screenshot Methods ==========
     

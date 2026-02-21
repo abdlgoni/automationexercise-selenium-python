@@ -109,6 +109,46 @@ class TestAuthentication:
         
         self.signup_page.click_continue()
         logger.info("Successfully deleted account")
+        
+    @pytest.mark.smoke
+    def test_login_correct_email_and_password(self):
+        """
+        1. Launch browser
+        2. Navigate to url 'http://automationexercise.com'
+        3. Verify that home page is visible successfully
+        4. Click on 'Signup / Login' button
+        5. Verify 'Login to your account' is visible
+        6. Enter correct email address and password
+        7. Click 'login' button
+        8. Verify that 'Logged in as username' is visible
+        9. Click 'Delete Account' button
+        10. Verify that 'ACCOUNT DELETED!' is visible
+        """
+        
+        logger.info("Starting test login with correct email and password")
+        self.home_page.open()
+        
+        self.home_page.click_signup_login()
+        logger.info("Clicked Signup/Login")
+        
+        self.login_page.is_login_section_visible()
+        login_title = self.login_page.get_login_title()
+        assert 'Login to your account' in login_title
+        logger.info("Login section is visible")
+        
+        self.login_page.login("abdl@gmail.com", "12345678")
+        self.login_page.click_login_button()
+        logger.info("Entered credentials and clicked login button")
+        assert self.home_page.is_logged_in()
+        username = self.home_page.get_logged_in_username()
+        logger.info(f"Successfully logged in as: {username}")
+        self.home_page.click_delete_account()
+        assert self.signup_page.is_account_deleted_successfully()
+        message_deleted = self.signup_page.get_account_deleted_message()
+        assert 'ACCOUNT DELETED!' in message_deleted
+        self.signup_page.click_continue()
+        logger.info("Successfully deleted account")
+        
             
         
         

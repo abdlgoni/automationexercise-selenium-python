@@ -32,14 +32,19 @@ class LoginPage(BasePage):
     def is_login_section_visible(self):
         return self.is_element_visible(self.LOGIN_TITLE)
     
+    def get_login_title(self):
+        return self.get_text(self.LOGIN_TITLE)
+    
     def is_signup_section_visible(self):
         return self.is_element_visible(self.SIGNUP_TITLE)
     
     def login(self, email, password):
         self.input_text(self.EMAIL_FORM_LOGIN, email)
         self.input_text(self.PASSWORD_FORM, password)
-        self.click(self.LOGIN_BUTTON)
         self.logger.info(f"Attempted with email {email}")
+
+    def click_login_button(self):
+        self.click(self.LOGIN_BUTTON)
         
     def signup(self, name, email):
         self.input_text(self.NAME_FORM, name)
@@ -57,18 +62,18 @@ class LoginPage(BasePage):
             return self.get_text(self.LOGIN_ERROR_MESSAGE, timeout=3)
         return None
     
-    def enter_username(self, username):
-        self.input_text(self.USERNAME_INPUT, username)
+    # def enter_username(self, username):
+    #     self.input_text(self.USERNAME_INPUT, username)
         
-    def enter_password(self, password):
-        self.input_text(self.PASSWORD_INPUT, password)
+    # def enter_password(self, password):
+    #     self.input_text(self.PASSWORD_INPUT, password)
         
-    def click_login_button(self):
-        self.click(self.LOGIN_BUTTON)
+    # def click_login_button(self):
+    #     self.click(self.LOGIN_BUTTON)
         
-    def login(self, username, password):
-        self.enter_username(username)
-        self.enter_password(password)
+    # def login(self, username, password):
+    #     self.enter_username(username)
+    #     self.enter_password(password)
 
         
     def get_error_message(self):

@@ -2,7 +2,7 @@ class Config:
     BASE_URL = "https://automationexercise.com/"
     
     BROWSER = "chrome"
-    HEADLES = False
+    HEADLESS = False
     IMPLICIT_WAIT = 10
     EXPLICIT_WAIT = 10
     PAGE_LOAD_TIMEOUT = 30
