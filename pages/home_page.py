@@ -27,7 +27,7 @@ class HomePage(BasePage):
     # ==================== NAVIGATION MENU ====================
     # Text-based locator untuk menu items (karena tidak ada ID/class unik)
     
-    
+    LOGO = (By.CSS_SELECTOR, "img[alt='Website for automation practice']header[id='header'] li:nth-child(1) a:nth-child(1)") 
     HOME_LINK = (By.XPATH, "//a[contains(@href, '/')]//i[@class='fa fa-home']/..")
     PRODUCTS_LINK = (By.XPATH, "//a[@href='/products']")
     CART_LINK = (By.XPATH, "//a[@href='/view_cart']")
@@ -154,7 +154,7 @@ class HomePage(BasePage):
         self.logger.info("Clicked Delete Account")
         
     def is_logged_in(self):
-        return self.is_element_visible(self.LOGGED_IN_AS, timeout=3)
+        return self.is_element_visible(self.LOGGED_IN_AS)
     
     def get_logged_in_username(self):
         """

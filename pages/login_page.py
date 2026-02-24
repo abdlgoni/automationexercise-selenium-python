@@ -28,6 +28,7 @@ class LoginPage(BasePage):
     NAME_FORM = (By.CSS_SELECTOR, "input[placeholder='Name']")
     EMAIL_FORM_SIGNUP = (By.CSS_SELECTOR, "input[data-qa='signup-email']")
     SIGNUP_BUTTON = (By.CSS_SELECTOR, "button[data-qa='signup-button']")
+    SIGNUP_ERROR_MESSAGE = (By.XPATH, "//p[normalize-space()='Email Address already exist!']")
     
     def is_login_section_visible(self):
         return self.is_element_visible(self.LOGIN_TITLE)
@@ -59,28 +60,19 @@ class LoginPage(BasePage):
     
     def get_login_error(self):
         if self.is_login_error_displayed():
-            return self.get_text(self.LOGIN_ERROR_MESSAGE, timeout=3)
+            return self.get_text(self.LOGIN_ERROR_MESSAGE)
         return None
     
-    # def enter_username(self, username):
-    #     self.input_text(self.USERNAME_INPUT, username)
-        
-    # def enter_password(self, password):
-    #     self.input_text(self.PASSWORD_INPUT, password)
-        
-    # def click_login_button(self):
-    #     self.click(self.LOGIN_BUTTON)
-        
-    # def login(self, username, password):
-    #     self.enter_username(username)
-    #     self.enter_password(password)
+    def is_signup_error_displayed(self):
+        return self.is_element_visible(self.SIGNUP_ERROR_MESSAGE)
+    
+    def get_signup_error(self):
+        if self.is_signup_error_displayed():
+            return self.get_text(self.SIGNUP_ERROR_MESSAGE)
+        return None
 
         
-    def get_error_message(self):
-        return self.get_text(self.ERROR_MESSAGE)
     
-    def get_succes_message(self):
-        return self.get_text(self.SUCCES_MESSAGE)
     
     
     

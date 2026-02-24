@@ -29,25 +29,29 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="function", autouse=True)
 def driver(request):
     """
     Fixture untuk create dan quit WebDriver
-    Scope: class - satu driver untuk satu test class
+    Scope: function + autouse - satu driver BARU untuk setiap test method
+    Browser akan di-close setelah test selesai, kemudian di-buka lagi untuk test berikutnya
+    
+    autouse=True memastikan fixture ini selalu berjalan untuk SETIAP test
+    tanpa perlu tambahan di class atau method level
     """
-    logger.info(f"Starting test class")
+    logger.info(f"Starting test: {request.node.name}")
     
     browser = request.config.getoption("--browser") if hasattr(request.config, 'getoption') else Config.BROWSER
     driver = DriverFactory.get_driver(browser)
     
-    # Assign driver ke class agar bisa diakses via self.driver
-    if request.cls is not None:
-        request.cls.driver = driver
+    # Assign driver ke instance test agar bisa diakses via self.driver
+    if request.instance is not None:
+        request.instance.driver = driver
     
     yield driver
     
     driver.quit()
-    logger.info(f"Finished test class")
+    logger.info(f"Finished test: {request.node.name} - Browser closed")
 
 # @pytest.fixture(scope="session")
 # def driver_session(request):
@@ -75,6 +79,23 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     rep = outcome.get_result()
     setattr(item, f"rep_{rep.when}", rep)
+    
+    # Capture screenshot jika test failed
+    if rep.when == "call" and rep.failed:
+        # Get driver dari test instance
+        if hasattr(item, "instance") and hasattr(item.instance, "driver"):
+            driver = item.instance.driver
+            if driver and Config.SCREENSHOT_ON_FAILURE:
+                screenshot_name = f"{item.name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                try:
+                    os.makedirs(Config.SCREENSHOT_PATH, exist_ok=True)
+                    filepath = f"{Config.SCREENSHOT_PATH}{screenshot_name}.png"
+                    driver.save_screenshot(filepath)
+                    logger.error(f"Screenshot captured on failure: {filepath}")
+                    # Attach screenshot path ke report untuk bisa dilihat di laporan
+                    rep.screenshot_path = filepath
+                except Exception as e:
+                    logger.error(f"Gagal capture screenshot: {str(e)}")
 
 
 def pytest_addoption(parser):
