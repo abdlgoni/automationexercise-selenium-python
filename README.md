@@ -174,6 +174,14 @@ logs/
 
 ---
 
+## Sample Test Report
+
+![HTML Report](docs/html-report.jpeg)
+
+## Automatic Screenshot on Failure
+
+![Failure Screenshot](docs/.png)
+
 ## Framework Design Highlights
 
 ### Page Object Model (POM)
@@ -211,6 +219,6 @@ GitHub: https://github.com/abdlgoni
 
 ---
 
-## 📄 License
+## License
 
 This project is for educational and portfolio purposes.
