@@ -215,7 +215,7 @@ Dynamic test data is created using Faker to avoid dependency on static test data
 
 QA Automation portfolio project created to demonstrate practical automation testing skills using Selenium and Python.
 
-GitHub: https://github.com/abdlgoni
+Manual Testing: https://github.com/abdlgoni/qa-portfolio-sauce-demo
 
 ---
 
