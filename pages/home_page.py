@@ -121,7 +121,7 @@ class HomePage(BasePage):
         Open automation exercise homepage
         """
         self.open_url(self.url)
-        self.wait_for_page_ready(self.SIGNUP_LOGIN_LINK)
+        self.wait_for_page_ready(self.CAROUSEL)
         self.logger.info(f"Opened homepage: {self.url}")
     
     def click_signup_login(self):
@@ -166,6 +166,9 @@ class HomePage(BasePage):
             # Extract username dari "Logged in as username"
             return full_text.replace("Logged in as ", "").strip()
         return None
+    
+    def homepage_loaded(self):
+        return self.is_element_visible(self.CAROUSEL)
         
     def click_test_cases(self):
         """
