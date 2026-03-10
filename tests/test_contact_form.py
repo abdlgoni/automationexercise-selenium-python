@@ -30,13 +30,17 @@ class TestContactForm:
         10. Verify success message 'Success! Your details have been submitted successfully.' is visible
         11. Click 'Home' button and verify that landed to home page successfully
         """
- 
+
         self.home_page.open()
-        assert self.home_page.is_element_visible(self.home_page.CAROUSEL), "Homepage not visible"
+        logger.info("Verifying home page visible")
+        assert self.home_page.is_homepage_visible(timeout=15), \
+            "Homepage not visible"
+        logger.info("Homepage is visible succesfully")
 
 
+        logger.info("Clicking contact us button")
         self.home_page.click_contact_us()
-        logger.info("Navigated to Contact Us page")
+        logger.info("Clicked contact us button")
 
 
         assert self.contact_page.get_in_touch_title().strip().lower() == 'get in touch', "Get In Touch title not found"
@@ -64,6 +68,6 @@ class TestContactForm:
 
 
         self.contact_page.click_home()
-        assert self.home_page.homepage_loaded(), "Did not navigate back to homepage"
+        assert self.home_page.is_homepage_visible(), "Did not navigate back to homepage"
 
 

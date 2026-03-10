@@ -19,6 +19,28 @@ class BasePage:
         self.actions = ActionChains(driver)
         self.logger = logging.getLogger(__name__)
         
+    
+    def _dismiss_ads(driver):
+        """Cleanup ads/vignette yang lolos dari blocking"""
+        try:
+            driver.execute_script("""
+                const adSelectors = [
+                    '#google_vignette',
+                    'iframe[id*="google_ads"]',
+                    'div[id*="google_ads"]',
+                    '.adsbygoogle',
+                    '#ad-overlay'
+                ];
+                adSelectors.forEach(sel => {
+                    document.querySelectorAll(sel).forEach(el => el.remove());
+                });
+                // Restore scroll jika di-lock oleh vignette
+                document.body.style.overflow = 'auto';
+                document.body.style.position = 'static';
+            """);
+        except Exception:
+            pass  # Silent fail, jangan sampai break test flow
+        
     def find_element(self, locator):
         """
         Find dan return single element
@@ -134,6 +156,7 @@ class BasePage:
         except TimeoutException:
             self.logger.debug(f"Element tidak Visible {locator}")
             return False
+        
     def is_element_present(self, locator):
         """
         Check apakah element present di DOM
@@ -163,6 +186,7 @@ class BasePage:
         wait.until(EC.invisibility_of_element_located(locator))
         self.logger.debug(f"Element sudah hilang {locator}")
         
+        
     # ========== Navigation Methods ==========
     
     def open_url(self, url):
@@ -173,6 +197,7 @@ class BasePage:
             url (str): URL yang akan dibuka
         """
         self.driver.get(url)
+        self._dismiss_ads()
         self.logger.info(f"Opened URL {url}")
     
     def get_current_url(self):

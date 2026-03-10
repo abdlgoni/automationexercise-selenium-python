@@ -4,6 +4,7 @@ Page Object Model untuk automation exercise Homepage (automationexercise.com)
 
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
+from selenium.common.exceptions import TimeoutException
 from utils.config import Config
 import logging
 
@@ -121,8 +122,23 @@ class HomePage(BasePage):
         Open automation exercise homepage
         """
         self.open_url(self.url)
-        self.wait_for_page_ready(self.CAROUSEL)
         self.logger.info(f"Opened homepage: {self.url}")
+    
+    def is_homepage_visible(self, timeout=15):
+        
+        try:
+            homepage_visible = self.is_element_visible(
+                self.CAROUSEL, timeout=timeout
+            )
+            
+            if homepage_visible:
+                self.logger.info("Homepage is visible")
+                return True
+            else:
+                self.logger.error("Homepage not visible")
+                
+        except TimeoutException:
+            self.logger.error("Timed out waiting for homepage visible")
     
     def click_signup_login(self):
         """
@@ -167,8 +183,6 @@ class HomePage(BasePage):
             return full_text.replace("Logged in as ", "").strip()
         return None
     
-    def homepage_loaded(self):
-        return self.is_element_visible(self.CAROUSEL)
         
     def click_test_cases(self):
         """

@@ -18,23 +18,5 @@ class Config:
     LOG_FILE = "logs/test_execution.log"
     LOG_LEVEL = "INFO"
     
-    VALID_SEARCH_KEYWORDS = [
-        "Python programming",
-        "Artificial Intelligence",
-        "Indonesia",
-        "World War II"
-    ]
-    
-    INVALID_SEARCH_KEYWORDS = [
-        "xyzabcqwerty123notfound",
-        "@@##$$%%"
-    ]
-    
-    POPULAR_ARTICLES = [
-        "United States",
-        "Indonesia",
-        "Python (programming language)",
-        "World War II"
-    ]
     
     
