@@ -28,7 +28,7 @@ class HomePage(BasePage):
     # ==================== NAVIGATION MENU ====================
     # Text-based locator untuk menu items (karena tidak ada ID/class unik)
     
-    LOGO = (By.CSS_SELECTOR, "img[alt='Website for automation practice']header[id='header'] li:nth-child(1) a:nth-child(1)") 
+    LOGO = (By.CSS_SELECTOR, ".logo ") 
     HOME_LINK = (By.XPATH, "//a[contains(@href, '/')]//i[@class='fa fa-home']/..")
     PRODUCTS_LINK = (By.XPATH, "//a[@href='/products']")
     CART_LINK = (By.XPATH, "//a[@href='/view_cart']")
@@ -128,7 +128,7 @@ class HomePage(BasePage):
         
         try:
             homepage_visible = self.is_element_visible(
-                self.CAROUSEL, timeout=timeout
+                self.LOGO, timeout=timeout
             )
             
             if homepage_visible:

@@ -33,7 +33,7 @@ class TestProduct:
         self.home_page.open()
         
         logger.info("Verifying home page is visible")
-        assert self.home_page.is_homepage_visible(timeout=15),\
+        assert self.home_page.is_homepage_visible(),\
             "Homepage is not visible"
         logger.info("Home page visible successfully")
         
@@ -42,7 +42,7 @@ class TestProduct:
         logger.info("Clicked product button")
         
         logger.info("Verifying ALL PRODUCTS page")
-        assert self.product_page.is_all_products_page_visible(timeout=10),\
+        assert self.product_page.is_all_products_page_visible(),\
             "ALL PRODUCTS Page is not visible"
             
         title = self.product_page.get_all_products_title()
@@ -53,7 +53,7 @@ class TestProduct:
         
         logger.info("Verifying Product list is visible")
         
-        assert self.product_page.is_product_list_visible(timeout=10),\
+        assert self.product_page.is_product_list_visible(),\
             "Products List is not visible"
             
         products_count = self.product_page.get_product_count()
@@ -65,7 +65,7 @@ class TestProduct:
         logger.info("Clicked view product of first product")
         
         logger.info("Verifying user is on product detail page")
-        assert self.detail_product.is_product_detail_page_visible(timeout=10),\
+        assert self.detail_product.is_product_detail_page_visible(),\
             "Product detail is not visible"
         logger.info("User landed to product detail page")
         
