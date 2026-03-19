@@ -46,7 +46,7 @@ class DetailProductPage(BasePage):
     def get_product_name(self):
         
         try:
-            name = self.get_text(self.PRODUCT_NAME, timeout=10)
+            name = self.get_text(self.PRODUCT_NAME)
             self.logger.info(f"Found Product name {name}")
             return name
         

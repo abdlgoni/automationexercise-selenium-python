@@ -5,6 +5,7 @@ Contains all locators and methods for product page
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
 import logging
 import time
 
@@ -20,6 +21,11 @@ class ProductPage(BasePage):
     PRODUCT_CARDS = (By.CSS_SELECTOR, ".productinfo.text-center")
 
     VIEW_PRODUCT_BUTTON = (By.XPATH, "//a[contains(text(),'View Product')]")
+    ADD_TO_CART_BUTTON_OVERLAY = (By.CSS_SELECTOR,".product-overlay .add-to-cart")
+    
+    MODAL_CONTENT = (By.CSS_SELECTOR, ".modal-content")
+    CONTINUE_SHOPPING_BUTTON = (By.CSS_SELECTOR, ".btn.btn-success.close-modal.btn-block")
+    VIEW_CART_LINK = (By.XPATH, "//body//section//p[2]")
     
     SEARCH_INPUT = (By.ID, "search_product")
     SEARCH_BUTTON = (By.ID, "submit_search")
@@ -37,7 +43,7 @@ class ProductPage(BasePage):
                 return False
             
         except TimeoutException:
-            self.logger.error("Timed out waiting for All Products title to be visible")
+            self.logger.error("Timeout waiting for All Products title to be visible")
             return False
         
     def get_all_products_title(self):
@@ -96,21 +102,65 @@ class ProductPage(BasePage):
                 time.sleep(0.5)
                 
                 view_buttons[index].click()
-                self.logger.info(f"✓ Clicked View Product for product index {index}")
+                self.logger.info(f"Clicked View Product for product index {index}")
                 return True
             
             else:
                 self.logger.error(
-                    f"❌ Product index {index} out of range "
+                    f"Product index {index} out of range "
                     f"(only {len(view_buttons)} products available)"
                 )
                 return False
             
         except Exception as e:
-            self.logger.error(f"❌ Failed to click View Product: {e}")
+            self.logger.error(f"Failed to click View Product: {e}")
             return False
         
+    def add_to_cart_by_index(self, index=0):
+        
+        try:
+            
+            products = self.find_elements(
+                self.PRODUCT_ITEMS
+            )
+            
+            if index >= len(products):
+                return False
+                
+            product = products[index]
+        
+            # Scroll
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView(true);", 
+                product
+            )
+            time.sleep(0.5)
+            
+            actions = ActionChains(self.driver)
+            actions.move_to_element(product).perform()
+            time.sleep(0.5)  # Wait for button to appear
+            
+            # Now click add to cart
+            add_btn = self.ADD_TO_CART_BUTTON_OVERLAY
+            add_btn.click()
+            
+            return True
+        
+        except Exception as e:
+            self.logger.error(f"Failed: {e}")
+            return False
+        
+    def is_modal_content_visible(self, timeout=10):
+        return self.is_element_visible(self.MODAL_CONTENT, timeout=timeout)
     
+    def click_continue_shopping(self):
+        self.click(self.CONTINUE_SHOPPING_BUTTON)
+        self.logger.info("Clicked CONTINUE SHOPPING button")
+    
+    def click_view_cart_link(self):
+        self.click(self.VIEW_CART_LINK)
+        self.logger.info("Clicked VIEW CART LINK")
+        
     def search_product(self, search_term):
         """
         Search for products

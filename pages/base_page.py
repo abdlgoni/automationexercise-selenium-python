@@ -55,9 +55,9 @@ class BasePage:
             element = self.wait.until(EC.presence_of_element_located(locator))
             self.logger.debug(f"Element ditemukan {locator}")
             return element
-        except TimeoutException:
+        except TimeoutException as e:
             self.logger.error(f"element tidak ditemukan{locator}")
-            return []
+            raise e
             
     def find_elements(self, locator):
         """
@@ -73,7 +73,7 @@ class BasePage:
             elements = self.wait.until(EC.presence_of_all_elements_located(locator))
             self.logger.debug(f"Ditemukan {len(elements)} elements: {locator}")
             return elements
-        except TimeoutException:
+        except TimeoutException :
             self.logger.error(f"Elements tidak ditemukan: {locator}")
             return []
         

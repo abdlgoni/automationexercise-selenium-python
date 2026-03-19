@@ -202,7 +202,7 @@ class HomePage(BasePage):
         """
         Navigate to Video Tutorial page
         """
-        self.click(self.VIDEO_TUTORIAL_LINK)
+        self.click(self.VIDEO_TUTORIALS_LINK)
         self.logger.info("Clicked Video Tutorial Link")
         
     def click_contact_us(self):
@@ -225,7 +225,7 @@ class HomePage(BasePage):
         }
         
         if category_name in category_map:
-            self.click(category_map[category_map])
+            self.click(category_map[category_name])
             self.logger.info(f"clicked {category_name} Category")
         else:
             self.logger.error(f"Clicked {category_name} Not Found")
@@ -248,8 +248,8 @@ class HomePage(BasePage):
         }
         
         if brand_name in brand_map:
-            self.scroll_to_element(brand_map[brand_map])
-            self.click(brand_map[brand_map])
+            self.scroll_to_element(brand_map[brand_name])
+            self.click(brand_map[brand_name])
             self.logger.info(f"Clicked {brand_name} brand")
             
         else:

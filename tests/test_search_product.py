@@ -1,7 +1,6 @@
 import pytest
 from pages.home_page import HomePage
 from pages.product_page import ProductPage
-from pages.detail_product import DetailProductPage
 from pages.search_result import SearchResultPage
 import logging
 
@@ -14,7 +13,6 @@ class TestSearchProduct:
         self.driver = driver
         self.homepage = HomePage(driver)
         self.product_page = ProductPage(driver)
-        self.detail_product_page = DetailProductPage(driver)
         self.search_result = SearchResultPage(driver)
         
     @pytest.mark.smoke
