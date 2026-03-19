@@ -141,7 +141,7 @@ class ProductPage(BasePage):
             time.sleep(0.5)  # Wait for button to appear
             
             # Now click add to cart
-            add_btn = self.ADD_TO_CART_BUTTON_OVERLAY
+            add_btn = product.find_element(*self.ADD_TO_CART_BUTTON_OVERLAY)
             add_btn.click()
             
             return True

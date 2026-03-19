@@ -36,7 +36,7 @@ class CartPage(BasePage):
     def is_cart_page_visible(self, timeout=10):
         
         try:
-            table_visible = self.is_element_present(self.CART_INFO_TABLE, timeout=timeout)
+            table_visible = self.is_element_visible(self.CART_INFO_TABLE, timeout=timeout)
             
             if table_visible:
                 self.logger.info("Cart page is visible")
