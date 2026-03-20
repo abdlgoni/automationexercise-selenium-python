@@ -10,7 +10,6 @@ import logging
 
 
 class HomePage(BasePage):
-    """Page Object untuk Wikipedia Homepage"""
     
     def __init__(self, driver):
         """
@@ -107,7 +106,7 @@ class HomePage(BasePage):
     # ==================== SUBSCRIPTION SECTION ====================
     # Footer subscription form
     SUBSCRIPTION_TITLE = (By.XPATH, "//h2[contains(text(), 'Subscription')]")
-    SUBSCRIPTION_EMAIL = (By.ID, "susbscribe_email")  # Note: typo di website (susbscribe)
+    SUBSCRIPTION_EMAIL = (By.ID, "susbscribe_email")  
     SUBSCRIPTION_BUTTON = (By.ID, "subscribe")
     SUBSCRIPTION_SUCCESS = (By.XPATH, "//div[contains(@class, 'alert-success')]")
     
@@ -254,6 +253,13 @@ class HomePage(BasePage):
             
         else:
             self.logger.error(f"Clicked {brand_name} Not Found")
+
+    def is_subscription_text_visible(self, timeout=5):
+        """
+        Check if subscription text is visible
+        Returns: Boolean (True if visible, False otherwise)
+        """
+        return self.is_element_visible(self.SUBSCRIPTION_TITLE, timeout=timeout)
     
     def subscribe_email(self, email):
         """
@@ -262,13 +268,18 @@ class HomePage(BasePage):
             email: Email address untuk subscribe
         Returns: Boolean (success atau tidak)
         """
-        self.scroll_to_element(self.SUBSCRIPTION_EMAIL)
         self.input_text(self.SUBSCRIPTION_EMAIL, email)
         self.click(self.SUBSCRIPTION_BUTTON)
         self.logger.info(f"Subscribed with email: {email}")
-        
-        # Check success message
+
         return self.is_element_visible(self.SUBSCRIPTION_SUCCESS, timeout=3)
+
+    def get_subscription_success_message(self):
+        """
+        Get subscription success message
+        Returns: String (subscription success message)
+        """
+        return self.get_text(self.SUBSCRIPTION_SUCCESS)
     
     def scroll_to_footer(self):
         """Scroll ke bagian footer"""

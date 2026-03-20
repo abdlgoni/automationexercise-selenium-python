@@ -32,11 +32,18 @@ class CartPage(BasePage):
     DELETE_BUTTONS = (By.XPATH, "//td[@class='cart_delete']//a")
     
     PROCEED_TO_CHECKOUT = (By.XPATH, "//a[contains(text(), 'Proceed To Checkout')]")
+
+    SUBSCRIPTION_TITLE = (By.XPATH, "//h2[contains(text(), 'Subscription')]")
+    SUBSCRIPTION_EMAIL = (By.ID, "susbscribe_email")
+    SUBSCRIPTION_BUTTON = (By.ID, "subscribe")
+    SUBSCRIPTION_SUCCESS = (By.XPATH, "//div[contains(@class, 'alert-success')]")
+
+    FOOTER = (By.ID, "footer")
     
     def is_cart_page_visible(self, timeout=10):
         
         try:
-            table_visible = self.is_element_visible(self.CART_INFO_TABLE, timeout=timeout)
+            table_visible = self.is_element_visible(self.SHOPPING_CART_TITLE, timeout=timeout)
             
             if table_visible:
                 self.logger.info("Cart page is visible")
@@ -394,6 +401,32 @@ class CartPage(BasePage):
         
         self.logger.info(f"Total Products: {len(details)}")
         self.logger.info("=" * 50)
+
+    def scroll_to_footer(self):
+        self.scroll_to_element(self.FOOTER)
+        self.logger.info("Scrolled to footer")
+
+    def is_subscription_text_visible(self):
+        """
+        Check if subscription text is visible
+        Returns: Boolean (True if visible, False otherwise)
+        """
+        return self.is_element_visible(self.SUBSCRIPTION_TITLE, timeout=3)
+    
+    def subscribe_email(self, email):
+    
+        self.input_text(self.SUBSCRIPTION_EMAIL, email)
+        self.click(self.SUBSCRIPTION_BUTTON)
+        self.logger.info(f"Subscribed with email: {email}")
+        
+        return self.is_element_visible(self.SUBSCRIPTION_SUCCESS, timeout=3)
+
+    def get_subscription_success_message(self):
+        """
+        Get subscription success message
+        Returns: String (subscription success message)
+        """
+        return self.get_text(self.SUBSCRIPTION_SUCCESS)
     
 
     
