@@ -7,6 +7,7 @@ from pages.base_page import BasePage
 from selenium.common.exceptions import TimeoutException
 from utils.config import Config
 import logging
+import time
 
 
 class HomePage(BasePage):
@@ -89,6 +90,7 @@ class HomePage(BasePage):
     # ==================== PRODUCTS SECTION ====================
     
     # Product items di homepage (recommended products)
+    FEATURES_ITEMS = (By.CLASS_NAME, "features_items")
     PRODUCT_ITEMS = (By.CLASS_NAME, "product-image-wrapper")
     
     # View Product button (menggunakan text)
@@ -182,7 +184,6 @@ class HomePage(BasePage):
             return full_text.replace("Logged in as ", "").strip()
         return None
     
-        
     def click_test_cases(self):
         """
         Navigate to Test Cases page
@@ -253,6 +254,68 @@ class HomePage(BasePage):
             
         else:
             self.logger.error(f"Clicked {brand_name} Not Found")
+
+    def is_product_list_visible(self, timeout=10):
+        
+        try:
+            products_container = self.find_elements(self.FEATURES_ITEMS, timeout=timeout)
+
+            products = self.get_all_products()
+            products_count = len(products)
+            
+            if products_container and products_count > 0:
+                self.logger.info(f"Products list visible with {products_count} products")
+                return True
+            else:
+                self.logger.error("Product list not visible or empty")
+                return False
+            
+        except Exception as e:
+            self.logger.error(f"Error checking product list: {e}")
+            return False
+
+    def get_all_products(self):
+
+        try:
+            products = self.find_elements(self.PRODUCT_ITEMS)
+            self.logger.info(f"Found {len(products)} products on page")
+            return products
+        except Exception as e:
+            self.logger.error(f"No product found: {e}")
+            return []
+    
+    def get_product_count(self):
+
+        products = self.get_all_products()
+        return len(products)
+        
+    def click_view_product_by_index(self, index=0):
+        try:
+            view_buttons = self.find_elements(self.VIEW_PRODUCT_BUTTONS)
+            
+            if index < len(view_buttons):
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView(true);",
+                    view_buttons[index]
+                )
+                time.sleep(0.5)
+                view_buttons[index].click()
+                self.logger.info(f"Clicked View Product for product index {index}")
+                return True
+            else:
+                self.logger.error(
+                    f"Product index {index} out of range "
+                    f"(only {len(view_buttons)} products available)"
+                )
+                return False
+        except Exception as e:
+            self.logger.error(f"Failed to click View Product: {e}")
+            return False
+
+    def click_view_cart(self):
+        self.click(self.VIEW_CART_LINK)
+        self.logger.info("Clicked View Cart link")
+
 
     def is_subscription_text_visible(self, timeout=5):
         """

@@ -12,7 +12,7 @@ class DetailProductPage(BasePage):
         super().__init__(driver)
         self.logger = logging.getLogger(__name__)
         
-    PRODUCT_DETAIL_SECTION = (By.CSS_SELECTOR, "product-information")
+    PRODUCT_DETAIL_SECTION = (By.CLASS_NAME, "product-information")
     
     PRODUCT_NAME = (By.XPATH, "//div[@class='product-information']//h2")
     PRODUCT_CATEGORY = (By.XPATH, "//div[@class='product-information']//p[contains(text(), 'Category:')]")
@@ -25,6 +25,10 @@ class DetailProductPage(BasePage):
     
     QUANTITY_INPUT = (By.ID, "quantity")
     ADD_TO_CART_BUTTON = (By.XPATH, "//button[@type='button' and contains(@class, 'cart')]")
+
+    MODAL_CONTENT = (By.CSS_SELECTOR, ".modal-content")
+    CONTINUE_SHOPPING_BUTTON = (By.CSS_SELECTOR, ".btn.btn-success.close-modal.btn-block")
+    VIEW_CART_LINK = (By.XPATH, "//body//section//p[2]")
    
     
     def is_product_detail_page_visible(self, timeout=10):
@@ -166,26 +170,32 @@ class DetailProductPage(BasePage):
         """Check if product image is visible"""
         return self.is_element_visible(self.PRODUCT_MAIN_IMAGE, timeout=5)
     
-    def add_to_cart(self, quantity=1):
-        """
-        Add product to cart
-        
-        Args:
-            quantity: Quantity to add (default: 1)
-            
-        Returns:
-            Boolean - True if added successfully
-        """
+    def set_quantity(self, quantity=1):
+
         try:
-            # Set quantity if not 1
-            if quantity != 1:
-                self.input_text(self.QUANTITY_INPUT, str(quantity))
-            
-            # Click add to cart
-            self.click(self.ADD_TO_CART_BUTTON)
-            self.logger.info(f"Added {quantity} to cart")
+            self.input_text(self.QUANTITY_INPUT, str(quantity))
+            self.logger.info(f"Set quantity to {quantity}")
             return True
-            
         except Exception as e:
-            self.logger.error(f"Failed to add to cart: {e}")
+            self.logger.error(f"Failed to set quantity: {e}")
             return False
+
+    def click_add_to_cart(self):
+        try:
+            self.click(self.ADD_TO_CART_BUTTON)
+            self.logger.info("Clicked add to cart button")
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to click add to cart: {e}")
+            return False
+
+    def is_modal_content_visible(self, timeout=10):
+        return self.is_element_visible(self.MODAL_CONTENT, timeout=timeout)
+    
+    def click_continue_shopping(self):
+        self.click(self.CONTINUE_SHOPPING_BUTTON)
+        self.logger.info("Clicked CONTINUE SHOPPING button")
+    
+    def click_view_cart_link(self):
+        self.click(self.VIEW_CART_LINK)
+        self.logger.info("Clicked VIEW CART LINK")
