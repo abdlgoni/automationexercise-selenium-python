@@ -7,6 +7,7 @@ from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.signup_page import SignupPage
 from utils.data_generator import TestDataGenerator
+from utils.config import Config
 import logging
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ class TestAuthentication:
         logger.info("Setup Complete")
     
     
+    @pytest.mark.smoke
     def test_register_user(self):
         """
         Test Case 1: Register User
@@ -57,6 +59,7 @@ class TestAuthentication:
         # ========== STEP 2: Click Signup/Login button ==========
         self.home_page.click_signup_login()
         logger.info("Clicked Signup/Login button")
+        self.login_page.wait_until_ready()
         
         # ========== STEP 3-4: Verify signup section visible ==========
         assert self.login_page.is_signup_section_visible()
@@ -72,7 +75,7 @@ class TestAuthentication:
         
         # ========== STEP 7: Verify account info page ==========
         assert self.signup_page.is_account_info_page_displayed()
-        logger.info("✓ Account information page is displayed")
+        logger.info("Account information page is displayed")
         # ========== STEP 8: Prepare account information ==========
         account_data = {
             'title': 'Mr',
@@ -112,6 +115,7 @@ class TestAuthentication:
         # ========== STEP 14: Click Continue button ==========
         self.signup_page.click_continue()
         logger.info("Clicked Continue button")
+        self.home_page.wait_until_ready()
 
         # ========== STEP 15: Verify logged in successfully ==========
         assert self.home_page.is_logged_in()
@@ -131,10 +135,11 @@ class TestAuthentication:
         
         self.signup_page.click_continue()
         logger.info("Clicked Continue button")
+        self.home_page.wait_until_ready()
         logger.info("✓ Test PASSED: User registration and deletion successful")
         
     @pytest.mark.smoke
-    def test_login_correct_email_and_password(self):
+    def test_login_correct_email_and_password(self, registered_account):
         """
         Test Case 2: Login with Correct Email and Password
         1. Launch browser
@@ -151,45 +156,49 @@ class TestAuthentication:
         logger.info("="*60)
         logger.info("TEST: Login with Correct Email and Password")
         logger.info("="*60)
-        
+
         # ========== STEP 1-3: Navigate to home page ==========
         self.home_page.open()
         logger.debug("Navigated to home page")
-        
+
         # ========== STEP 4: Click Signup/Login button ==========
         self.home_page.click_signup_login()
         logger.info("Clicked Signup/Login button")
-        
+        self.login_page.wait_until_ready()
+
         # ========== STEP 5: Verify login section visible ==========
         assert self.login_page.is_login_section_visible()
         login_title = self.login_page.get_login_title()
         assert 'Login to your account' in login_title
         logger.info("✓ Login section is visible")
-        
+
         # ========== STEP 6-7: Enter credentials and login ==========
-        self.login_page.login("abdl@gmail.com", "12345678")
-        logger.debug("Entered email and password")
-        
+        self.login_page.login(registered_account['email'], registered_account['password'])
+        logger.debug(f"Entered email: {registered_account['email']}")
+
         self.login_page.click_login_button()
         logger.info("Clicked login button")
-        
+        self.home_page.wait_until_ready()
+
         # ========== STEP 8: Verify login successful ==========
         assert self.home_page.is_logged_in()
         username = self.home_page.get_logged_in_username()
+        assert username == registered_account['name']
         logger.info(f"✓ Successfully logged in as: {username}")
-        
+
         # ========== STEP 9: Click Delete Account button ==========
         self.home_page.click_delete_account()
         logger.info("Clicked Delete Account button")
-        
+
         # ========== STEP 10: Verify account deleted ==========
         assert self.signup_page.is_account_deleted_successfully()
         message_deleted = self.signup_page.get_account_deleted_message()
         assert 'ACCOUNT DELETED!' in message_deleted
         logger.info(f"✓ Verified message: {message_deleted}")
-        
+
         self.signup_page.click_continue()
         logger.info("Clicked Continue button")
+        self.home_page.wait_until_ready()
         logger.info("✓ Test PASSED: Login and account deletion successful")
         
         
@@ -216,6 +225,7 @@ class TestAuthentication:
         # ========== STEP 4: Click Signup/Login button ==========
         self.home_page.click_signup_login()
         logger.info("Clicked Signup/Login button")
+        self.login_page.wait_until_ready()
         
         # ========== STEP 5: Verify login section visible ==========
         assert self.login_page.is_login_section_visible()
@@ -262,6 +272,7 @@ class TestAuthentication:
         # ========== STEP 4: Click Signup/Login button ==========
         self.home_page.click_signup_login()
         logger.info("Clicked Signup/Login button")
+        self.login_page.wait_until_ready()
         
         # ========== STEP 5: Verify login section visible ==========
         assert self.login_page.is_login_section_visible()
@@ -270,12 +281,13 @@ class TestAuthentication:
         logger.info("✓ Login section is visible")
         
         # ========== STEP 6-7: Enter credentials and login ==========
-        self.login_page.login("abdl@gmail.com", "indomiegoreng123!")
-        logger.debug("Entered email and password")
-        
+        self.login_page.login(Config.TEST_EMAIL, Config.TEST_PASSWORD)
+        logger.debug(f"Entered email: {Config.TEST_EMAIL}")
+
         self.login_page.click_login_button()
         logger.info("Clicked login button")
-        
+        self.home_page.wait_until_ready()
+
         # ========== STEP 8: Verify login successful ==========
         assert self.home_page.is_logged_in()
         username = self.home_page.get_logged_in_username()
@@ -284,6 +296,7 @@ class TestAuthentication:
         # ========== STEP 9: Click Logout button ==========
         self.home_page.click_logout()
         logger.info("Clicked Logout button")
+        self.login_page.wait_until_ready()
         
         # ========== STEP 10: Verify navigated to login page ==========
         assert self.login_page.is_login_section_visible()
@@ -313,15 +326,16 @@ class TestAuthentication:
         # ========== STEP 4: Click Signup/Login button ==========
         self.home_page.click_signup_login()
         logger.info("Clicked Signup/Login button")
+        self.login_page.wait_until_ready()
         
         # ========== STEP 5: Verify signup section visible ==========
         assert self.login_page.is_signup_section_visible()
         logger.info("✓ Signup section is visible")
         
         # ========== STEP 6: Enter name and existing email ==========
-        self.login_page.signup("abdul", "abdl@gmail.com")
+        self.login_page.signup("abdul", Config.TEST_EMAIL)
         logger.debug("Entered name: abdul")
-        logger.debug("Entered existing email: abdl@gmail.com")
+        logger.debug(f"Entered existing email: {Config.TEST_EMAIL}")
         
         # ========== STEP 7: Click Signup button ==========
         self.login_page.click_signup_button()

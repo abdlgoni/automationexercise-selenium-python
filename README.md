@@ -1,224 +1,160 @@
-# AutomationExercise Selenium Python Framework
+# AutomationExercise Selenium Python
 
-Automation testing framework built using **Python**, **Selenium WebDriver**, and **pytest** to automate end-to-end test scenarios on the AutomationExercise website.
-This project demonstrates implementation of a **maintainable QA automation framework** using industry best practices such as Page Object Model (POM), reusable utilities, and structured test architecture.
+[![CI](https://github.com/abdlgoni/automationexercise-selenium-python/actions/workflows/test.yml/badge.svg)](https://github.com/abdlgoni/automationexercise-selenium-python/actions/workflows/test.yml)
+
+Framework otomasi UI untuk [AutomationExercise](https://www.automationexercise.com/) menggunakan Selenium dan Pytest, dibangun dengan pendekatan yang dekat dengan praktik industri: pemisahan logika test dari halaman aplikasi, manajemen browser yang konsisten, dan pelaporan yang memudahkan debugging.
 
 ---
 
-## Project Overview
+## Cakupan Testing
 
-This project was developed as a **QA Automation portfolio project** to simulate a real-world automation framework used by QA Engineers.
+| File | Skenario | Status |
+|---|---|---|
+| `tests/test_authentication.py` | Registrasi, login valid/invalid, logout, duplicate email | Passed |
+| `tests/test_add_product_to_cart.py` | Tambah produk ke keranjang, verifikasi isi keranjang | Passed |
+| `tests/test_contact_form.py` | Submit form kontak dengan file upload | Passed |
+| `tests/test_place_order.py` | Checkout dengan registrasi saat proses order | Passed |
+| `tests/test_product.py` | Verifikasi daftar produk dan detail produk | Passed |
+| `tests/test_product_quantity.py` | Validasi perubahan kuantitas di keranjang | Passed |
+| `tests/test_search_product.py` | Pencarian produk berdasarkan kata kunci | Passed |
+| `tests/test_testcasepage.py` | Akses dan verifikasi halaman Test Cases | Passed |
+| `tests/test_verify_subscription.py` | Subscription dari homepage, cart, dan product page | Passed |
 
-The framework automates core authentication workflows including:
-
-- User Registration
-- Login (valid & invalid scenarios)
-- Logout functionality
-- Registration validation for existing users
-
-The goal of this project is to demonstrate:
-
-- UI automation using Selenium
-- Test framework design
-- Clean and scalable test architecture
-- Reusable automation components
+**15 test**, semua passed pada run CI terbaru.
 
 ---
 
 ## Tech Stack
 
-- **Python** 3.9.7
-- **Selenium** 4.36.0
-- **pytest** 8.4.2
-- **pytest-html** 4.2.0
-- **pytest-metadata** 3.1.1
-- Faker (test data generation)
-- Chrome WebDriver (auto-managed)
+- Python 3.9+
+- Selenium WebDriver + WebDriver Manager
+- Pytest + pytest-html
+- Faker — generate data akun unik per test run
+- python-dotenv — konfigurasi environment
 
 ---
 
-## Framework Architecture
-
-The framework follows the **Page Object Model (POM)** design pattern to separate test logic from page interaction logic.
+## Arsitektur
 
 ```
-automationexercise-selenium-python
-│
-├── logs/
-│
-├── pages/
-│   ├── basepage.py
-│   ├── homepage.py
-│   ├── loginpage.py
-│   └── signup.py
-│
-├── reports/
-│   ├── html_reports/
-│   └── screenshot/
-│
-├── tests/
-│   ├── conftest.py
-│   └── test_authentication.py
-│
+automationexercise-selenium-python/
+├── pages/               # Page Object per halaman aplikasi
+├── tests/               # Test case dan fixtures pytest
+│   └── conftest.py      # WebDriver lifecycle dan registered_account fixture
 ├── utils/
-│   ├── config.py
+│   ├── config.py        # Baca env var, konstanta timeout dan path
 │   ├── driver_factory.py
 │   └── data_generator.py
-│
-├── pytest.ini
-├── requirements.txt
-└── .gitignore
+├── reports/             # HTML report, screenshot on failure, JUnit XML
+├── logs/
+└── .github/workflows/
+    └── test.yml
 ```
 
----
+### Keputusan Desain
 
-## Key Features
+**Page Object Model** — locator dan interaksi halaman dipisahkan dari logika test. Perubahan selector UI hanya perlu diperbaiki di satu kelas, bukan di setiap test yang menggunakannya.
 
-✅ Page Object Model (POM) implementation
-✅ Reusable BasePage utilities
-✅ Explicit wait handling
-✅ Driver Factory pattern
-✅ Config-based environment settings
-✅ Faker-based dynamic test data generation
-✅ HTML test reporting
-✅ Logging system
-✅ Headless browser execution option
-✅ Screenshot capability (framework-ready)
+**Driver lifecycle di conftest.py** — WebDriver dibuat dan ditutup per test melalui fixture `scope="function"`. Ini menjaga isolasi antar test dan memastikan tidak ada state browser yang bocor ke test berikutnya.
 
----
+**`registered_account` fixture** — test yang membutuhkan akun valid menggunakan fixture ini, bukan hardcoded credential. Fixture register akun baru dengan data random sebelum test, dan melakukan fallback delete di teardown. Ini menghilangkan ketergantungan pada akun manual yang bisa terhapus kapan saja.
 
-## Automated Test Scenarios
+**Persistent account via env var** — `test_logout_user` dan `test_signup_existing_email` menggunakan `TEST_EMAIL` dan `TEST_PASSWORD` dari environment. Akun ini tidak pernah didelete oleh test manapun — test yang membutuhkan akun yang sudah terdaftar bergantung pada keberadaan akun ini.
 
-Implemented automation test cases:
+**Faker untuk test data** — email dan data registrasi digenerate dinamis untuk menghindari konflik duplicate email saat test dijalankan berulang kali.
 
-1. Register User
-2. Login User with correct email and password
-3. Login User with incorrect email and password
-4. Logout User
-5. Register User with existing email validation
+**Config terpusat** — timeout, path, dan konfigurasi browser dibaca dari `Config` class. Nilai default tersedia sehingga test bisa jalan tanpa `.env`, kecuali untuk skenario yang membutuhkan persistent account.
 
 ---
 
-## Installation & Setup
+## Setup
 
-### Clone Repository
+### Prasyarat
+
+- Python 3.9+
+- Google Chrome (versi terbaru)
+
+### Instalasi
 
 ```bash
 git clone https://github.com/abdlgoni/automationexercise-selenium-python.git
 cd automationexercise-selenium-python
-```
 
-### Create Virtual Environment
+python -m venv .venv
 
-```bash
-python -m venv venv
-```
+# Windows
+.venv\Scripts\activate
 
-Activate environment:
+# Mac/Linux
+source .venv/bin/activate
 
-**Windows**
-
-```bash
-venv\Scripts\activate
-```
-
-**Mac/Linux**
-
-```bash
-source venv/bin/activate
-```
-
-### Install Dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
----
+### Konfigurasi
 
-## Running Tests
-
-Run all tests:
+Salin template environment dan isi nilainya:
 
 ```bash
-pytest tests -v
+# Windows
+copy .env.example .env
+
+# Mac/Linux
+cp .env.example .env
 ```
 
-Run with HTML report:
+Isi `.env` dengan nilai yang sesuai — lihat tabel Environment Variables di bawah.
+
+---
+
+## Menjalankan Test
 
 ```bash
-pytest --html=reports/html_reports/report.html
-```
+# Suite lengkap dengan HTML report
+pytest -v --html=reports/html_reports/report.html --self-contained-html
 
-Run in headless mode:
+# Headless mode
+pytest -v --headless --html=reports/html_reports/report.html --self-contained-html
 
-```bash
-pytest --headless
-```
+# Modul tertentu
+pytest tests/test_authentication.py -v
 
----
-
-## Test Reporting
-
-After execution, HTML reports will be generated inside:
-
-```
-reports/html_reports/
-```
-
-Logs are stored in:
-
-```
-logs/
+# Output ringkas untuk CI
+pytest -q --junitxml=reports/pytest-results.xml
 ```
 
 ---
 
-## Sample Test Report
+## Environment Variables
 
-![HTML Report](docs/html-report.jpeg)
+| Variable | Deskripsi | Required | Lokal | CI |
+|---|---|---|---|---|
+| `BROWSER` | Browser yang dipakai (`chrome`, `firefox`) | Optional | `.env` | Hardcode di workflow |
+| `HEADLESS` | Jalankan browser headless (`true`/`false`) | Optional | `.env` | `true` di workflow |
+| `TEST_EMAIL` | Email persistent account untuk skenario auth | Required* | `.env` | GitHub Secret |
+| `TEST_PASSWORD` | Password persistent account | Required* | `.env` | GitHub Secret |
 
-## Automatic Screenshot on Failure
+*Required untuk `test_logout_user` dan `test_signup_existing_email`. Test lain tidak bergantung pada variabel ini.
 
-![Failure Screenshot](docs/.png)
-
-## Framework Design Highlights
-
-### Page Object Model (POM)
-
-Each web page is represented as a class containing locators and reusable actions, improving maintainability and readability.
-
-### BasePage Utilities
-
-Common browser actions such as waits, interactions, and screenshots are centralized to avoid duplication.
-
-### Driver Factory
-
-Browser initialization is handled through a factory pattern allowing easy configuration and scalability.
-
-### Data Generator
-
-Dynamic test data is created using Faker to avoid dependency on static test data.
+> **Catatan:** `TEST_EMAIL` dan `TEST_PASSWORD` merujuk ke akun yang dibuat manual dan tidak boleh didelete oleh test manapun. Akun ini dipakai sebagai persistent fixture — bukan sebagai akun yang dirotasi per run.
 
 ---
 
-## Future Improvements
+## Known Issues
 
-- Automatic screenshot capture on test failure
-- Parallel test execution
-- Expanded test coverage (Cart & Checkout flow)
-- Test data management enhancement
+**Encoding log di Windows** — output console dapat menampilkan karakter tidak terbaca ketika log berisi simbol non-ASCII. Fungsi test tidak terpengaruh. Perbaikan direncanakan dengan mengubah format log ke ASCII-safe.
 
 ---
 
-## Author
+## Roadmap
 
-QA Automation portfolio project created to demonstrate practical automation testing skills using Selenium and Python.
-
-Manual Testing: https://github.com/abdlgoni/qa-portfolio-sauce-demo
+- [ ] Parallel test execution untuk mengurangi waktu eksekusi
+- [ ] Assertion lebih spesifik pada skenario cart dan checkout
+- [ ] Dukungan multi-environment (staging vs production)
 
 ---
 
-## License
+## Proyek Terkait
 
-This project is for educational and portfolio purposes.
+- [Playwright TypeScript Framework](https://github.com/abdlgoni/automationplaywright) — framework E2E dengan CI/CD, storage state, dan custom fixtures
+- [Manual QA Portfolio](https://github.com/abdlgoni/qa-portfolio-sauce-demo) — 18 test case manual dengan bug report dan UX improvement report

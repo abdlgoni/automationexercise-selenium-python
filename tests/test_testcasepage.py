@@ -20,5 +20,6 @@ class TestTestCasePage:
         home_page.open()
         
         home_page.click_test_cases()
+        test_case_page.wait_until_ready()
         assert test_case_page.is_test_case_page_displayed(), "Test Case page is not displayed"
     

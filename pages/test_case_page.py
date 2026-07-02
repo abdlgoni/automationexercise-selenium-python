@@ -9,6 +9,8 @@ class TestCasePage(BasePage):
         
     TEST_CASE_CONTAINER = (By.CSS_SELECTOR, "section[id='form'] div[class='container']")
     
+    PAGE_READY_LOCATOR = TEST_CASE_CONTAINER
+    
     def is_test_case_page_displayed(self):
         self.logger.info("Checking Test Case page visibility")
         return self.is_element_visible(self.TEST_CASE_CONTAINER)

@@ -40,6 +40,7 @@ class TestAddPRoductToCart:
         logger.info("Clicking product button")
         self.home_page.click_products()
         logger.info("Clicked product button")
+        self.product_page.wait_until_ready()
 
         logger.info("Verifying all product")
         assert self.product_page.is_all_products_page_visible(), \
@@ -68,6 +69,7 @@ class TestAddPRoductToCart:
         logger.info("Clicking view cart")
         self.product_page.click_view_cart_link()
         logger.info("Clicked view cart")
+        self.cart_page.wait_until_ready()
 
         assert self.cart_page.is_cart_page_visible(), \
             "Cart page is not visible"
@@ -82,7 +84,6 @@ class TestAddPRoductToCart:
         cart_details = self.cart_page.get_all_cart_details()
 
 
-        self.cart_page.log_cart_summary()
 
         assert len(cart_details) == 2,\
             f"Expected 2 products in cart, got {len(cart_details)}"

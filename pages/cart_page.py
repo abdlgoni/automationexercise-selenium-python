@@ -3,12 +3,11 @@ Cart Page Object Model
 Contains all locator and methods for cart page
 """
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from pages.base_page import BasePage
 import logging
-import re
+
 
 class CartPage(BasePage):
     def __init__(self, driver):
@@ -19,7 +18,7 @@ class CartPage(BasePage):
     SHOPPING_CART_TITLE = (By.CSS_SELECTOR, ".active")
     
     CART_ITEMS = (By.XPATH, "//tbody//tr")
-    CART_PRODUCTS = (By.XPATH, "//tbody//tr[contains(@id, 'product-')]")
+    CART_PRODUCTS = (By.CSS_SELECTOR, "tr[id^='product-']")
     
     EMPTY_CART_MESSAGE = (By.ID, "empty_cart")
     
@@ -33,6 +32,10 @@ class CartPage(BasePage):
     
     PROCEED_TO_CHECKOUT = (By.XPATH, "//a[contains(text(), 'Proceed To Checkout')]")
 
+    CHECKOUT_MODAL = (By.CLASS_NAME, "modal-content")
+    REGISTER_LOGIN_BUTTON = (By.LINK_TEXT, "Register / Login")
+    CONTINUE_ON_CART = (By.CLASS_NAME, "modal-footer")
+
     SUBSCRIPTION_TITLE = (By.XPATH, "//h2[contains(text(), 'Subscription')]")
     SUBSCRIPTION_EMAIL = (By.ID, "susbscribe_email")
     SUBSCRIPTION_BUTTON = (By.ID, "subscribe")
@@ -40,10 +43,12 @@ class CartPage(BasePage):
 
     FOOTER = (By.ID, "footer")
     
-    def is_cart_page_visible(self, timeout=10):
+    PAGE_READY_LOCATOR = SHOPPING_CART_TITLE
+    
+    def is_cart_page_visible(self):
         
         try:
-            table_visible = self.is_element_visible(self.SHOPPING_CART_TITLE, timeout=timeout)
+            table_visible = self.is_element_visible(self.SHOPPING_CART_TITLE)
             
             if table_visible:
                 self.logger.info("Cart page is visible")
@@ -78,13 +83,9 @@ class CartPage(BasePage):
         
     def get_all_cart_products(self):
         
-        try:
-            products = self.find_elements(self.CART_PRODUCTS)
-            self.logger.info(f"Found {len(products)} in cart")
-            return products
-        except Exception as e:
-            self.logger.error(f"No product in cart: {e}")
-            return []
+        products = self.find_elements(self.CART_PRODUCTS)
+        self.logger.info(f"Found {len(products)} in cart")
+        return products
         
     def get_cart_products_count(self):
         
@@ -373,45 +374,21 @@ class CartPage(BasePage):
             return False
 
     def click_proceed_to_checkout(self):
-    
-        try:
-            self.click(self.PROCEED_TO_CHECKOUT)
-            self.logger.info("Clicked Proceed To Checkout")
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Failed to click checkout: {e}")
-            return False
+        self.click(self.PROCEED_TO_CHECKOUT)
+        self.logger.info("Clicked Proceed checkout button")
 
-    def log_cart_summary(self):
+    def is_modal_checkout_visible(self):
+        return self.is_element_visible(self.CHECKOUT_MODAL)
 
-        details = self.get_all_cart_details()
-        
-        self.logger.info("=" * 50)
-        self.logger.info("CART SUMMARY")
-        self.logger.info("=" * 50)
-        
-        for i, product in enumerate(details):
-            self.logger.info(f"Product {i + 1}:")
-            self.logger.info(f"  Name: {product['name']}")
-            self.logger.info(f"  Price: {product['price']}")
-            self.logger.info(f"  Quantity: {product['quantity']}")
-            self.logger.info(f"  Total: {product['total']}")
-            self.logger.info("-" * 50)
-        
-        self.logger.info(f"Total Products: {len(details)}")
-        self.logger.info("=" * 50)
+    def click_register_login_button(self):
+        self.click(self.REGISTER_LOGIN_BUTTON)
 
-    def scroll_to_footer(self):
-        self.scroll_to_element(self.FOOTER)
-        self.logger.info("Scrolled to footer")
-
-    def is_subscription_text_visible(self):
+    def is_subscription_text_visible(self, timeout=5):
         """
         Check if subscription text is visible
         Returns: Boolean (True if visible, False otherwise)
         """
-        return self.is_element_visible(self.SUBSCRIPTION_TITLE, timeout=3)
+        return self.is_element_visible(self.SUBSCRIPTION_TITLE, timeout=timeout)
     
     def subscribe_email(self, email):
     
@@ -419,7 +396,7 @@ class CartPage(BasePage):
         self.click(self.SUBSCRIPTION_BUTTON)
         self.logger.info(f"Subscribed with email: {email}")
         
-        return self.is_element_visible(self.SUBSCRIPTION_SUCCESS, timeout=3)
+        return self.is_element_visible(self.SUBSCRIPTION_SUCCESS)
 
     def get_subscription_success_message(self):
         """

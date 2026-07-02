@@ -39,6 +39,7 @@ class TestSearchProduct:
         logger.info("Clicking product button")
         self.homepage.click_products()
         logger.info("Clicked product button")
+        self.product_page.wait_until_ready()
         
         logger.info("Verifying all product")
         assert self.product_page.is_all_products_page_visible(), \
@@ -52,6 +53,7 @@ class TestSearchProduct:
         assert self.product_page.search_product(search_term), \
             f"Failed to search for {search_term}"
         logger.info(f"Searched for {search_term}")
+        self.search_result.wait_until_ready()
         
         logger.info("Verifying 'SEARCHED PRODUCTS' title")
         assert self.search_result.is_searched_products_page_visible(), \

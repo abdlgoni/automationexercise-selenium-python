@@ -30,10 +30,12 @@ class ProductPage(BasePage):
     SEARCH_INPUT = (By.ID, "search_product")
     SEARCH_BUTTON = (By.ID, "submit_search")
     
-    def is_all_products_page_visible(self, timeout=10):
+    PAGE_READY_LOCATOR = ALL_PRODUCTS_TITLE
+    
+    def is_all_products_page_visible(self):
         
         try:
-            title_visible = self.is_element_visible(self.ALL_PRODUCTS_TITLE, timeout=timeout)
+            title_visible = self.is_element_visible(self.ALL_PRODUCTS_TITLE)
             
             if title_visible:
                 self.logger.info("All Products page is visible")
@@ -50,10 +52,10 @@ class ProductPage(BasePage):
         return self.get_text(self.ALL_PRODUCTS_TITLE)
     
     
-    def is_product_list_visible(self, timeout=10):
+    def is_product_list_visible(self):
         
         try:
-            container_visible = self.is_element_visible(self.FEATURES_ITEMS, timeout=timeout)
+            container_visible = self.is_element_visible(self.FEATURES_ITEMS)
             
             products = self.get_all_products()
             products_count = len(products)
@@ -150,8 +152,8 @@ class ProductPage(BasePage):
             self.logger.error(f"Failed: {e}")
             return False
         
-    def is_modal_content_visible(self, timeout=10):
-        return self.is_element_visible(self.MODAL_CONTENT, timeout=timeout)
+    def is_modal_content_visible(self):
+        return self.is_element_visible(self.MODAL_CONTENT)
     
     def click_continue_shopping(self):
         self.click(self.CONTINUE_SHOPPING_BUTTON)

@@ -40,6 +40,7 @@ class TestProduct:
         logger.info("Clicking product button")
         self.home_page.click_products()
         logger.info("Clicked product button")
+        self.product_page.wait_until_ready()
         
         logger.info("Verifying ALL PRODUCTS page")
         assert self.product_page.is_all_products_page_visible(),\
@@ -63,6 +64,7 @@ class TestProduct:
         assert self.product_page.click_view_product_by_index(0),\
             "Failed click view product button"
         logger.info("Clicked view product of first product")
+        self.detail_product.wait_until_ready()
         
         logger.info("Verifying user is on product detail page")
         assert self.detail_product.is_product_detail_page_visible(),\

@@ -1,11 +1,13 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 from utils.config import Config
 import logging
 
 class BasePage:
+    
+    PAGE_READY_LOCATOR = None
     
     def __init__(self, driver):
         """
@@ -18,12 +20,17 @@ class BasePage:
         self.wait = WebDriverWait(driver, Config.EXPLICIT_WAIT)
         self.actions = ActionChains(driver)
         self.logger = logging.getLogger(__name__)
+    
+    def _get_wait(self, timeout=None):
+        if timeout is not None:
+            return WebDriverWait(self.driver, timeout)
+        return self.wait
         
     
-    def _dismiss_ads(driver):
+    def _dismiss_ads(self):
         """Cleanup ads/vignette yang lolos dari blocking"""
         try:
-            driver.execute_script("""
+            self.driver.execute_script("""
                 const adSelectors = [
                     '#google_vignette',
                     'iframe[id*="google_ads"]',
@@ -41,116 +48,59 @@ class BasePage:
         except Exception:
             pass  # Silent fail, jangan sampai break test flow
         
-    def find_element(self, locator):
-        """
-        Find dan return single element
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-            
-        Returns:
-            WebElement: Element yang ditemukan
-        """
+    def find_element(self, locator, timeout=None):
         try:
-            element = self.wait.until(EC.presence_of_element_located(locator))
+            element = self._get_wait(timeout).until(EC.presence_of_element_located(locator))
             self.logger.debug(f"Element ditemukan {locator}")
             return element
         except TimeoutException as e:
             self.logger.error(f"element tidak ditemukan{locator}")
             raise e
             
-    def find_elements(self, locator):
-        """
-        Find dan return multiple elements
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-            
-        Returns:
-            list: List of WebElements
-        """
+    def find_elements(self, locator, timeout=None):
         try:
-            elements = self.wait.until(EC.presence_of_all_elements_located(locator))
+            elements = self._get_wait(timeout).until(EC.presence_of_all_elements_located(locator))
             self.logger.debug(f"Ditemukan {len(elements)} elements: {locator}")
             return elements
         except TimeoutException :
             self.logger.error(f"Elements tidak ditemukan: {locator}")
             return []
         
-    def click(self, locator):
-        """
-        Click pada element
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-        """
+    def click(self, locator, timeout=None):
         try:
-            element = self.wait.until(EC.element_to_be_clickable(locator))
+            element = self._get_wait(timeout).until(EC.element_to_be_clickable(locator))
             element.click()
-            self.logger.debug(f"Clicked element{locator}")
-        except TimeoutException:
-            self.logger.error(f"Element tidak Clickable: {locator}")
-            raise
+            self.logger.debug(f"Clicked element {locator}")
+        except (TimeoutException, ElementClickInterceptedException):
+            try:
+                element = self.find_element(locator, timeout=timeout)
+                self.driver.execute_script("arguments[0].click();", element)
+                self.logger.debug(f"Clicked via JS fallback: {locator}")
+            except Exception as js_error:
+                self.logger.error(f"Click failed (normal + JS): {locator} - {js_error}")
+                raise
         
-    def input_text(self, locator, text):
-        """
-        Input text ke element
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-            text (str): Text yang akan di-input
-        """
-        element = self.find_element(locator)
+    def input_text(self, locator, text, timeout=None):
+        element = self.find_element(locator, timeout=timeout)
         element.clear()
         element.send_keys(text)
         self.logger.debug(f"input text '{text}' ke element: {locator}")
         
-    def get_text(self, locator):
-        """
-        Get text dari element
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-            
-        Returns:
-            str: Text dari element
-        """
-        element = self.find_element(locator)
+    def get_text(self, locator, timeout=None):
+        element = self.find_element(locator, timeout=timeout)
         text = element.text
         self.logger.debug(f"Get Text dari {locator}: {text}")
         return text
     
-    def get_attribute(self, locator, attribute_name):
-        """
-        Get attribute value dari element
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-            attribute_name (str): Nama attribute
-            
-        Returns:
-            str: Value dari attribute
-        """
-        element = self.find_element(locator)
+    def get_attribute(self, locator, attribute_name, timeout=None):
+        element = self.find_element(locator, timeout=timeout)
         value = element.get_attribute(attribute_name)
         self.logger.debug(f"Get Atribute '{attribute_name}' dari {locator}: {value}")
         return value
     
     def is_element_visible(self, locator, timeout=None):
-        """
-        Check apakah element visible
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-            timeout (int): Custom timeout
-            
-        Returns:
-            bool: True jika visible, False jika tidak
-        """
         try:
-            wait_time = timeout if timeout else Config.EXPLICIT_WAIT
-            wait = WebDriverWait(self.driver, wait_time)
-            wait.until(EC.visibility_of_element_located(locator))
+            self._get_wait(timeout).until(EC.visibility_of_element_located(locator))
             self.logger.debug(f"Element Visible: {locator}")
             return True
         except TimeoutException:
@@ -174,16 +124,7 @@ class BasePage:
             return False
     
     def wait_for_element_disappear(self, locator, timeout=None):
-        """
-        Wait hingga element hilang
-        
-        Args:
-            locator (tuple): Tuple of (By.TYPE, "value")
-            timeout (int): Custom timeout
-        """
-        wait_time = timeout if timeout else Config.EXPLICIT_WAIT
-        wait = WebDriverWait(self.driver, wait_time)
-        wait.until(EC.invisibility_of_element_located(locator))
+        self._get_wait(timeout).until(EC.invisibility_of_element_located(locator))
         self.logger.debug(f"Element sudah hilang {locator}")
         
         
@@ -238,21 +179,22 @@ class BasePage:
     # ========== Wait Methods ==========
     
     def wait_for_page_load(self, timeout=None):
-        """
-        Wait hingga page fully loaded
-        
-        Args:
-            timeout (int): Custom timeout
-        """
-        wait_time = timeout if timeout else Config.PAGE_LOAD_TIMEOUT
-        wait = WebDriverWait(self.driver, wait_time)
-        wait.until(lambda driver: driver.execute_script("return document.readyState") == "complete")
+        if timeout is None:
+            timeout = Config.PAGE_LOAD_TIMEOUT
+        self._get_wait(timeout).until(lambda driver: driver.execute_script("return document.readyState") == "complete")
         self.logger.debug("Page fully loaded")
         
-    def wait_for_page_ready(self, locator):
-        WebDriverWait(self.driver, Config.EXPLICIT_WAIT).until(
-        EC.visibility_of_element_located(locator)
-    )
+    def wait_for_page_ready(self, locator, timeout=None):
+        try:
+            self._get_wait(timeout).until(EC.visibility_of_element_located(locator))
+            self.logger.debug(f"Page ready — element visible: {locator}")
+        except TimeoutException:
+            self.logger.error(f"Page not ready — element not visible: {locator}")
+            raise
+    
+    def wait_until_ready(self, timeout=None):
+        if self.PAGE_READY_LOCATOR:
+            self.wait_for_page_ready(self.PAGE_READY_LOCATOR, timeout)
     
     # ========== Screenshot Methods ==========
     

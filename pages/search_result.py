@@ -20,11 +20,13 @@ class SearchResultPage(BasePage):
     PRODUCT_NAMES = (By.CSS_SELECTOR, ".productinfo p")
     PRODUCT_PRICES = (By.CSS_SELECTOR, ".productinfo h2")
     
+    PAGE_READY_LOCATOR = SEARCHED_PRODUCTS_TITLE
+    
     # ==================== VERIFICATION METHODS ====================
     
-    def is_searched_products_page_visible(self, timeout=15):
+    def is_searched_products_page_visible(self):
         """Verify if 'SEARCHED PRODUCTS' title is visible"""
-        return self.is_element_visible(self.SEARCHED_PRODUCTS_TITLE, timeout=timeout)
+        return self.is_element_visible(self.SEARCHED_PRODUCTS_TITLE)
     
     def get_searched_products_title(self):
         """Get the 'SEARCHED PRODUCTS' title text"""
@@ -34,10 +36,10 @@ class SearchResultPage(BasePage):
             self.logger.error(f"Failed to get title: {e}")
             return None
     
-    def is_products_result_visible(self, timeout=15):
+    def is_products_result_visible(self):
         """Verify container is visible and has at least one product"""
         try:
-            container_visible = self.is_element_visible(self.FEATURES_ITEMS, timeout=timeout)
+            container_visible = self.is_element_visible(self.FEATURES_ITEMS)
             products = self.get_all_search_results()
             
             if container_visible and len(products) > 0:

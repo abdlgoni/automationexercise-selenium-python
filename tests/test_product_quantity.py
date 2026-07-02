@@ -43,6 +43,7 @@ class TestProductQuantity:
         assert self.home_page.click_view_product_by_index(0), \
             "Failed to click view product button"
         logger.info("Clicked view product of first product")
+        self.detail_product.wait_until_ready()
 
         logger.info("Verifying user is on product detail page")
         assert self.detail_product.is_product_detail_page_visible(), \
@@ -67,6 +68,7 @@ class TestProductQuantity:
         logger.info("Clicking view cart")
         self.detail_product.click_view_cart_link()
         logger.info("Clicked view cart")
+        self.cart_page.wait_until_ready()
 
         logger.info("Verifying product is displayed in cart page with exact quantity")
         assert self.cart_page.is_cart_page_visible(), \

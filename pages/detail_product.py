@@ -15,11 +15,11 @@ class DetailProductPage(BasePage):
     PRODUCT_DETAIL_SECTION = (By.CLASS_NAME, "product-information")
     
     PRODUCT_NAME = (By.XPATH, "//div[@class='product-information']//h2")
-    PRODUCT_CATEGORY = (By.XPATH, "//div[@class='product-information']//p[contains(text(), 'Category:')]")
+    PRODUCT_CATEGORY = (By.XPATH, "//div[@class='product-information']//p[contains(., 'Category:')]")
     PRODUCT_PRICE = (By.XPATH, "//div[@class='product-information']//span/span")
-    PRODUCT_AVAILABILITY = (By.XPATH, "//div[@class='product-information']//p[contains(text(), 'Availability:')]")
-    PRODUCT_CONDITION = (By.XPATH, "//div[@class='product-information']//p[contains(text(), 'Condition:')]")
-    PRODUCT_BRAND = (By.XPATH, "//div[@class='product-information']//p[contains(text(), 'Brand:')]")
+    PRODUCT_AVAILABILITY = (By.XPATH, "//div[@class='product-information']//p[contains(., 'Availability:')]")
+    PRODUCT_CONDITION = (By.XPATH, "//div[@class='product-information']//p[contains(., 'Condition:')]")
+    PRODUCT_BRAND = (By.XPATH, "//div[@class='product-information']//p[contains(., 'Brand:')]")
     
     PRODUCT_MAIN_IMAGE = (By.XPATH, "//div[@class='view-product']//img")
     
@@ -29,13 +29,14 @@ class DetailProductPage(BasePage):
     MODAL_CONTENT = (By.CSS_SELECTOR, ".modal-content")
     CONTINUE_SHOPPING_BUTTON = (By.CSS_SELECTOR, ".btn.btn-success.close-modal.btn-block")
     VIEW_CART_LINK = (By.XPATH, "//body//section//p[2]")
-   
     
-    def is_product_detail_page_visible(self, timeout=10):
+    PAGE_READY_LOCATOR = PRODUCT_DETAIL_SECTION
+    
+    def is_product_detail_page_visible(self):
         
         try:
             detail_visible = self.is_element_visible(
-                self.PRODUCT_DETAIL_SECTION, timeout=timeout)
+                self.PRODUCT_DETAIL_SECTION)
              
             if detail_visible:
                 self.logger.info("Product detail page is visible")
@@ -82,14 +83,14 @@ class DetailProductPage(BasePage):
             self.logger.error(f"Failed to get price {e}")
             return None
         
-    def get_product_avaibility(self):
+    def get_product_availability(self):
         
         try:
             full_text = self.get_text(self.PRODUCT_AVAILABILITY)
             
-            avaibility = full_text.replace("Avaibility:", "").strip()
-            self.logger.info(f"Product Avaibility: {avaibility}")
-            return avaibility
+            availability = full_text.replace("Availability:", "").strip()
+            self.logger.info(f"Product Availability: {availability}")
+            return availability
         
         except Exception as e:
             self.logger.error(f"Failed to get avaibility {e}")
@@ -122,13 +123,13 @@ class DetailProductPage(BasePage):
             self.logger.error(f"Failed to get brand {e}")
             return None
         
-    def get_all_product_detail(self):
+    def get_all_product_details(self):
         
         details={
             'name': self.get_product_name(),
             'category': self.get_product_category(),
             'price': self.get_product_price(),
-            'avaibility': self.get_product_avaibility(),
+            'availability': self.get_product_availability(),
             'condition': self.get_product_condition(),
             'brand': self.get_product_brand()
         }
@@ -139,12 +140,12 @@ class DetailProductPage(BasePage):
     def verify_product_detail_visible(self):
         
         details_check = {
-            'name': self.is_element_visible(self.PRODUCT_NAME, timeout=5),
-            'category': self.is_element_visible(self.PRODUCT_CATEGORY, timeout=5),
-            'price': self.is_element_visible(self.PRODUCT_PRICE, timeout=5),
-            'avaibility': self.is_element_visible(self.PRODUCT_PRICE, timeout=5),
-            'condition': self.is_element_visible(self.PRODUCT_CONDITION, timeout=5),
-            'brand': self.is_element_visible(self.PRODUCT_BRAND, timeout=5)
+            'name': self.is_element_visible(self.PRODUCT_NAME),
+            'category': self.is_element_visible(self.PRODUCT_CATEGORY),
+            'price': self.is_element_visible(self.PRODUCT_PRICE),
+            'availability': self.is_element_visible(self.PRODUCT_AVAILABILITY),
+            'condition': self.is_element_visible(self.PRODUCT_CONDITION),
+            'brand': self.is_element_visible(self.PRODUCT_BRAND)
         }
         
         all_visible = all(details_check.values())
@@ -168,7 +169,7 @@ class DetailProductPage(BasePage):
     
     def is_product_image_visible(self):
         """Check if product image is visible"""
-        return self.is_element_visible(self.PRODUCT_MAIN_IMAGE, timeout=5)
+        return self.is_element_visible(self.PRODUCT_MAIN_IMAGE)
     
     def set_quantity(self, quantity=1):
 
@@ -189,8 +190,8 @@ class DetailProductPage(BasePage):
             self.logger.error(f"Failed to click add to cart: {e}")
             return False
 
-    def is_modal_content_visible(self, timeout=10):
-        return self.is_element_visible(self.MODAL_CONTENT, timeout=timeout)
+    def is_modal_content_visible(self):
+        return self.is_element_visible(self.MODAL_CONTENT)
     
     def click_continue_shopping(self):
         self.click(self.CONTINUE_SHOPPING_BUTTON)

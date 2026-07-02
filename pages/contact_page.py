@@ -24,6 +24,8 @@ class ContactcusPage(BasePage):
     SUCCESS_MESSAGE = (By.XPATH, "//div[@class='status alert alert-success']")
     HOME_BUTTON = (By.CSS_SELECTOR, ".btn.btn-success")
     
+    PAGE_READY_LOCATOR = GET_IN_TOUCH_TITLE
+    
     def is_contact_us_visible(self):
         return self.is_element_visible(self.CONTACT_US_TITLE)
     
@@ -60,7 +62,7 @@ class ContactcusPage(BasePage):
             self.logger.debug(f"No alert present: {e}")
             return False
 
-    def handle_ads(self, timeout=5):
+    def handle_ads(self):
         """
         Try several strategies to dismiss ads/popups that may appear after form submit.
 
@@ -94,7 +96,7 @@ class ContactcusPage(BasePage):
 
         for loc in close_locators:
             try:
-                if self.is_element_visible(loc, timeout=2):
+                if self.is_element_visible(loc):
                     try:
                         self.click(loc)
                         self.logger.debug(f"Closed ad using locator: {loc}")

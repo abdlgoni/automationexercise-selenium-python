@@ -8,6 +8,10 @@ import os
 from datetime import datetime
 from utils.driver_factory import DriverFactory
 from utils.config import Config
+from pages.home_page import HomePage
+from pages.login_page import LoginPage
+from pages.signup_page import SignupPage
+from utils.data_generator import TestDataGenerator
 
 
 # Setup logging
@@ -149,7 +153,102 @@ def pytest_configure(config):
     )
 
 
-# ========== Fixture Examples untuk specific needs ==========
+# ========== Fixture untuk setup akun ==========
+
+@pytest.fixture(scope="function")
+def registered_account():
+    """
+    Fixture function: register akun baru sebelum test,
+    yield credentials, cleanup setelah test selesai.
+
+    Gunakan di test yang butuh akun sudah terdaftar (e.g., test_login_correct_email_and_password).
+    """
+    logger = logging.getLogger(__name__)
+    driver = None
+    user_data = None
+    try:
+        # Setup: register new account via browser terpisah
+        driver = DriverFactory.get_driver()
+        home_page = HomePage(driver)
+        login_page = LoginPage(driver)
+        signup_page = SignupPage(driver)
+        data_gen = TestDataGenerator()
+        user_data = data_gen.generate_user_data()
+        birth_date = data_gen.generate_birth_date()
+
+        home_page.open()
+        home_page.click_signup_login()
+        login_page.wait_until_ready()
+        login_page.signup(user_data['name'], user_data['email'])
+        login_page.click_signup_button()
+
+        account_data = {
+            'title': 'Mr',
+            'password': user_data['password'],
+            'day': birth_date['day'],
+            'month': birth_date['month'],
+            'year': birth_date['year'],
+        }
+        address_data = {
+            'first_name': user_data['first_name'],
+            'last_name': user_data['last_name'],
+            'company': user_data['company'],
+            'address1': user_data['address1'],
+            'address2': user_data['address2'],
+            'country': user_data['country'],
+            'state': user_data['state'],
+            'city': user_data['city'],
+            'zipcode': user_data['zipcode'],
+            'mobile': user_data['mobile'],
+        }
+        signup_page.complete_registration(account_data, address_data)
+        assert signup_page.is_account_created_successfully()
+        signup_page.click_continue()
+        home_page.wait_until_ready()
+
+        # Logout agar bisa test login
+        home_page.click_logout()
+        login_page.wait_until_ready()
+
+        logger.info(f"Registered account for test: {user_data['email']}")
+
+        # Yield credentials ke test
+        yield {
+            'email': user_data['email'],
+            'password': user_data['password'],
+            'name': user_data['name'],
+        }
+    except Exception as e:
+        logger.error(f"Gagal setup registered_account: {e}")
+        # Pastikan yield tetap berjalan agar pytest tidak error
+        yield None
+    finally:
+        # Teardown: cleanup akun (fallback jika test tidak sempat delete)
+        if user_data and driver:
+            try:
+                home_page = HomePage(driver)
+                login_page = LoginPage(driver)
+                signup_page = SignupPage(driver)
+
+                home_page.open()
+                home_page.click_signup_login()
+                login_page.wait_until_ready()
+                login_page.login(user_data['email'], user_data['password'])
+                login_page.click_login_button()
+                home_page.wait_until_ready()
+
+                if home_page.is_logged_in():
+                    home_page.click_delete_account()
+                    if signup_page.is_account_deleted_successfully():
+                        signup_page.click_continue()
+                        logger.info(f"Cleaned up account: {user_data['email']}")
+            except Exception:
+                logger.warning(f"Account {user_data['email']} already deleted or cleanup skipped")
+            finally:
+                driver.quit()
+        elif driver:
+            driver.quit()
+
 
 @pytest.fixture
 def base_url():

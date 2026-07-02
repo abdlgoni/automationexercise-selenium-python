@@ -97,13 +97,14 @@ class HomePage(BasePage):
     VIEW_PRODUCT_BUTTONS = (By.CLASS_NAME, "choose")
     
     # Add to cart button
-    ADD_TO_CART_BUTTONS = (By.XPATH, "//a[@class='btn btn-default add-to-cart']")
-    
-    # Continue Shopping button (muncul setelah add to cart)
-    CONTINUE_SHOPPING_BTN = (By.XPATH, "//button[contains(text(), 'Continue Shopping')]")
+    ADD_TO_CART_BUTTON_OVERLAY = (By.CSS_SELECTOR,".product-overlay .add-to-cart")
     
     # View Cart link (muncul setelah add to cart)
-    VIEW_CART_MODAL = (By.XPATH, "//a[@href='/view_cart']//u[contains(text(), 'View Cart')]")
+    VIEW_CART_MODAL = (By.CSS_SELECTOR, ".modal-content")
+    # Continue Shopping button (muncul setelah add to cart)
+    CONTINUE_SHOPPING_BTN = (By.CSS_SELECTOR, ".btn.btn-success.close-modal.btn-block")
+    VIEW_CART_LINK = (By.XPATH, "//body//section//p[2]")
+    
     
     # ==================== SUBSCRIPTION SECTION ====================
     # Footer subscription form
@@ -115,6 +116,8 @@ class HomePage(BasePage):
     # ==================== FOOTER ====================
     FOOTER = (By.ID, "footer")
     SCROLL_UP_BUTTON = (By.ID, "scrollUp")
+    
+    PAGE_READY_LOCATOR = LOGO
     
     # ========== Page Actions ==========
     
@@ -311,6 +314,44 @@ class HomePage(BasePage):
         except Exception as e:
             self.logger.error(f"Failed to click View Product: {e}")
             return False
+
+    def add_to_cart_by_index(self, index=0):
+        try:
+            
+            products = self.find_elements(
+                self.PRODUCT_ITEMS
+            )
+
+            if index >= len(products):
+                return False
+            
+            product = products[index]
+
+            self.driver.execute_script(
+                "argument[0].scrollintoview(true)",
+                product
+            )
+            time.sleep(0.5)
+
+            actions = ActionChains(self.driver)
+            actions.move_to_element(product).perform()
+            time.sleep(0.5)
+
+            add_btn = product.find_element(*self.ADD_TO_CART_BUTTON_OVERLAY)
+            add_btn.click()
+            
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to add to cart: {e}")
+            return False
+
+    def is_modal_content_visible(self):
+        return self.is_element_visible(self.VIEW_CART_MODAL)
+    
+    def click_continue_shopping(self):
+        self.click(self.CONTINUE_SHOPPING_BTN)
+        self.logger.info("Clicked Continue Shopping button")
+                      
 
     def click_view_cart(self):
         self.click(self.VIEW_CART_LINK)

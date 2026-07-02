@@ -41,6 +41,7 @@ class TestContactForm:
         logger.info("Clicking contact us button")
         self.home_page.click_contact_us()
         logger.info("Clicked contact us button")
+        self.contact_page.wait_until_ready()
 
 
         assert self.contact_page.get_in_touch_title().strip().lower() == 'get in touch', "Get In Touch title not found"
@@ -68,6 +69,7 @@ class TestContactForm:
 
 
         self.contact_page.click_home()
+        self.home_page.wait_until_ready()
         assert self.home_page.is_homepage_visible(), "Did not navigate back to homepage"
 
 

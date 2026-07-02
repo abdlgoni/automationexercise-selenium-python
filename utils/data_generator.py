@@ -72,6 +72,15 @@ class TestDataGenerator:
         """
         return random.choice(['Mr', 'Mrs'])
     
+    def generate_credit_card_data(self):
+        return {
+            'name_on_card': f"{self.fake.first_name()} {self.fake.last_name()}",
+            'card_number': self.fake.credit_card_number(card_type='visa'),
+            'cvc': self.fake.credit_card_security_code(),
+            'expiry_month': str(random.randint(1, 12)),
+            'expiry_year': str(random.randint(2025, 2030))
+        }
+
     def generate_unique_email(self):
         """
         Generate unique email dengan timestamp
@@ -84,7 +93,6 @@ class TestDataGenerator:
     
     
 if __name__ == "__main__":
-    # Example usage
     generator = TestDataGenerator()
     
     print("=" * 50)
@@ -107,12 +115,5 @@ if __name__ == "__main__":
     print("=" * 50)
     card_data = generator.generate_credit_card_data()
     for key, value in card_data.items():
-        print(f"{key}: {value}")
-    
-    print("\n" + "=" * 50)
-    print("GENERATED CONTACT FORM DATA")
-    print("=" * 50)
-    contact_data = generator.generate_contact_form_data()
-    for key, value in contact_data.items():
         print(f"{key}: {value}")
 
